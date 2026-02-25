@@ -1,0 +1,41 @@
+{
+  "kind": "build_request",
+  "title": "Rename brand name to KBR Silks",
+  "projectName": "KBR Silks",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "text": "Update the brand name displayed in the app header and all other locations from 'Silk Splendor' to 'KBR Silks'. This includes the top header in Layout.tsx, the HTML page title in index.html, and any other visible references to the old brand name throughout the UI.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "please name the app as KBR silks",
+          "Would you like me to update the brand name to KBR Silks in the app header?",
+          "Yes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The top header displays 'KBR Silks' instead of 'Silk Splendor'",
+        "The browser tab title reads 'KBR Silks'",
+        "No visible instance of 'Silk Splendor' remains anywhere in the UI"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not change any visual theme, colors, or layout — only the brand name text",
+    "Do not modify immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui"
+  ],
+  "nonGoals": [
+    "Changing the visual theme or design",
+    "Adding or removing any features",
+    "Modifying backend logic"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

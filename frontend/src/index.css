@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.375rem;
+
+    /* Silk Splendor Brand Palette - Light Mode */
+    --background: 0.97 0.008 85;
+    --foreground: 0.18 0.04 30;
+
+    --card: 0.99 0.004 80;
+    --card-foreground: 0.18 0.04 30;
+
+    --popover: 0.99 0.004 80;
+    --popover-foreground: 0.18 0.04 30;
+
+    /* Deep Crimson Primary */
+    --primary: 0.38 0.16 22;
+    --primary-foreground: 0.97 0.008 85;
+
+    /* Gold Secondary */
+    --secondary: 0.82 0.12 75;
+    --secondary-foreground: 0.18 0.04 30;
+
+    --muted: 0.93 0.012 75;
+    --muted-foreground: 0.52 0.04 40;
+
+    /* Gold Accent */
+    --accent: 0.78 0.14 72;
+    --accent-foreground: 0.18 0.04 30;
+
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.97 0.008 85;
+
+    --border: 0.88 0.025 70;
+    --input: 0.88 0.025 70;
+    --ring: 0.38 0.16 22;
+
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+
+    --sidebar: 0.22 0.06 22;
+    --sidebar-foreground: 0.92 0.02 75;
+    --sidebar-primary: 0.78 0.14 72;
+    --sidebar-primary-foreground: 0.18 0.04 30;
+    --sidebar-accent: 0.32 0.08 22;
+    --sidebar-accent-foreground: 0.92 0.02 75;
+    --sidebar-border: 0.32 0.08 22;
+    --sidebar-ring: 0.78 0.14 72;
+
+    /* Custom brand tokens */
+    --crimson: 0.38 0.16 22;
+    --crimson-light: 0.52 0.18 22;
+    --crimson-dark: 0.26 0.12 22;
+    --gold: 0.78 0.14 72;
+    --gold-light: 0.88 0.12 78;
+    --gold-dark: 0.62 0.16 65;
+    --ivory: 0.97 0.008 85;
+    --ivory-dark: 0.93 0.012 75;
+    --teal: 0.52 0.12 195;
+  }
+
+  .dark {
+    --background: 0.14 0.04 22;
+    --foreground: 0.95 0.01 80;
+
+    --card: 0.18 0.05 22;
+    --card-foreground: 0.95 0.01 80;
+
+    --popover: 0.20 0.05 22;
+    --popover-foreground: 0.95 0.01 80;
+
+    --primary: 0.78 0.14 72;
+    --primary-foreground: 0.14 0.04 22;
+
+    --secondary: 0.26 0.07 22;
+    --secondary-foreground: 0.95 0.01 80;
+
+    --muted: 0.24 0.06 22;
+    --muted-foreground: 0.65 0.04 60;
+
+    --accent: 0.32 0.08 22;
+    --accent-foreground: 0.95 0.01 80;
+
+    --destructive: 0.60 0.22 25;
+    --destructive-foreground: 0.95 0.01 80;
+
+    --border: 0.28 0.06 22;
+    --input: 0.28 0.06 22;
+    --ring: 0.78 0.14 72;
+
+    --sidebar: 0.12 0.04 22;
+    --sidebar-foreground: 0.92 0.02 75;
+    --sidebar-primary: 0.78 0.14 72;
+    --sidebar-primary-foreground: 0.14 0.04 22;
+    --sidebar-accent: 0.22 0.06 22;
+    --sidebar-accent-foreground: 0.92 0.02 75;
+    --sidebar-border: 0.22 0.06 22;
+    --sidebar-ring: 0.78 0.14 72;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Lato', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .silk-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .silk-divider::before,
+  .silk-divider::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid oklch(var(--gold) / 0.4);
+  }
+  .silk-divider span {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    color: oklch(var(--gold));
+    font-size: 0.875rem;
+  }
+
+  .saree-card {
+    background-color: oklch(var(--card));
+    border-radius: 0.125rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px oklch(var(--crimson) / 0.08);
+  }
+  .saree-card:hover {
+    box-shadow: 0 8px 24px oklch(var(--crimson) / 0.18);
+    transform: translateY(-2px);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, oklch(var(--gold-dark)), oklch(var(--gold)), oklch(var(--gold-dark)));
+    color: oklch(var(--foreground));
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.125rem;
+    transition: all 0.2s ease;
+  }
+  .btn-gold:hover {
+    background: linear-gradient(135deg, oklch(var(--gold)), oklch(var(--gold-light)), oklch(var(--gold)));
+    box-shadow: 0 4px 12px oklch(var(--gold) / 0.4);
+  }
+
+  .btn-crimson {
+    background: linear-gradient(135deg, oklch(var(--crimson-dark)), oklch(var(--crimson)));
+    color: oklch(var(--ivory));
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.125rem;
+    transition: all 0.2s ease;
+  }
+  .btn-crimson:hover {
+    box-shadow: 0 4px 12px oklch(var(--crimson) / 0.4);
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, oklch(var(--crimson-dark)) 0%, oklch(var(--crimson)) 60%, oklch(var(--crimson-light)) 100%);
+    color: oklch(var(--ivory));
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .admin-table-row {
+    border-bottom: 1px solid oklch(var(--border));
+    transition: background-color 0.15s ease;
+  }
+  .admin-table-row:hover {
+    background-color: oklch(var(--gold) / 0.06);
+  }
+}

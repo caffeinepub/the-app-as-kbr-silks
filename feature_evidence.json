@@ -1,0 +1,25 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-brand-name-displayed-in-the-app-header-and-all-other-locations-from-silk-splendor-to-kbr-silks-this-includes-the-top-header-in-layout-tsx-the-html-page-title-in-index-html-and-any-other-visible-references-to-the-old-brand-name-throughout-the-ui",
+      "featureTitle": "Update the brand name displayed in the app header and all other locations from 'Silk Splendor' to 'KBR Silks'. This includes the top header in Layout.tsx, the HTML page title in index.html, and any other visible references to the old brand name throughout the UI.",
+      "files": [
+        "frontend/index.html",
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

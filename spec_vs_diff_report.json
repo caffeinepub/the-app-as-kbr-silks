@@ -1,0 +1,15 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-25T18:45:52.018Z",
+  "summary": "The diff implements REQ-10 correctly. The brand name 'Silk Splendor' has been replaced with 'KBR Silks' in both the top header (Layout.tsx) and the browser tab title (index.html). The file summaries confirm no remaining visible references to 'Silk Splendor' in the UI components. All acceptance criteria appear to be met.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.92,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/src/components/Layout.tsx",
+    "project_state.json"
+  ]
+}

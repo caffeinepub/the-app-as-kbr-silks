@@ -1,0 +1,20 @@
+{
+  "backend/main.mo": "Motoko actor defining the saree shop backend with types and CRUD operations for Sarees, Orders, and Customers, including blob storage integration for saree images.",
+  "feature_evidence.json": "Feature evidence report confirming the brand name update from 'Silk Splendor' to 'KBR Silks' was applied in frontend/index.html and frontend/src/components/Layout.tsx.",
+  "frontend-file-summaries.txt": "JSON document containing one-sentence summaries of each frontend source file, describing their purpose and key implementation details.",
+  "frontend/index.css": "Global Tailwind CSS entry point defining CSS custom properties for light and dark theme color tokens used throughout the app.",
+  "frontend/index.html": "Minimal HTML shell that sets the browser tab title to 'KBR Silks' and mounts the React app via src/main.tsx.",
+  "frontend/src/App.tsx": "Sets up TanStack Router with routes for Catalog, AdminSarees, AdminOrders, and AdminCustomers pages, all wrapped in the Layout component.",
+  "frontend/src/components/Layout.tsx": "App shell component rendering a sticky crimson/gold gradient header with the 'KBR Silks' brand, responsive desktop and mobile navigation, and a footer.",
+  "frontend/src/hooks/useActor.ts": "React Query hook that creates and caches an authenticated or anonymous ICP actor, invalidating dependent queries whenever the identity changes.",
+  "frontend/src/hooks/useInternetIdentity.ts": "Provides an InternetIdentityProvider and useInternetIdentity hook for managing Internet Identity login, logout, and identity state via AuthClient.",
+  "frontend/src/hooks/useQueries.ts": "Defines React Query hooks for CRUD operations on sarees, orders, and customers, wrapping backend actor calls with query invalidation on mutations.",
+  "frontend/src/index.css": "Global stylesheet importing Google Fonts and defining Tailwind base/component layers with a 'Silk Splendor' brand palette (crimson, gold, ivory) for light and dark modes.",
+  "frontend/src/main.tsx": "Application entry point that mounts the React app with QueryClientProvider and InternetIdentityProvider wrapping the root App component.",
+  "frontend/src/pages/AdminCustomers.tsx": "Admin page for managing customers, featuring a sortable table and a modal dialog for adding or editing customer records with validation.",
+  "frontend/src/pages/AdminOrders.tsx": "Admin page displaying all orders in a sortable table with inline order status updates via a styled dropdown select per row.",
+  "frontend/src/pages/AdminSarees.tsx": "Admin page for managing saree inventory with a modal form supporting image upload, fabric type selection, and add/edit/delete operations.",
+  "frontend/src/pages/Catalog.tsx": "Displays a searchable, filterable saree catalog page with a responsive grid of SareeCard components showing image, fabric type, color, price, and stock. Fetches saree data via a custom hook and supports filtering by name, fabric type, and color.",
+  "frontend/tailwind.config.js": "Tailwind CSS configuration for the frontend, extending the theme with custom brand color tokens (crimson, gold, ivory, teal), serif/sans-serif font families, and plugins for typography, container queries, and animations.",
+  "project_state.json": "Tracks the current state of the KBR Silks business app project, listing implemented features (catalog, admin panel, orders, customers, navigation, branding) with their requirement IDs and versions."
+}

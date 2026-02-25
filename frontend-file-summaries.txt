@@ -1,0 +1,12 @@
+{
+  "frontend/src/index.css": "Global styles with the Silk Splendor brand design system — OKLCH color tokens for crimson, gold, and ivory, Google Fonts imports, and component classes (saree-card, page-header, admin-table-row) rewritten to use plain CSS instead of @apply with opacity modifiers to avoid Tailwind build errors.",
+  "frontend/tailwind.config.js": "Extended Tailwind config with brand font families (heading, display, body), custom color tokens (crimson, gold, ivory, teal), silk-themed box shadows, and shimmer animation.",
+  "frontend/src/hooks/useQueries.ts": "All React Query hooks for backend operations — saree CRUD (useGetAllSarees, useAddSaree, useUpdateSaree, useDeleteSaree), order management (useGetAllOrders, usePlaceOrder, useUpdateOrderStatus), and customer management (useGetAllCustomers, useAddCustomer, useUpdateCustomer).",
+  "frontend/src/App.tsx": "Main app entry with TanStack Router setup — defines routes for Catalog (/), AdminSarees (/admin/sarees), AdminOrders (/admin/orders), and AdminCustomers (/admin/customers), all wrapped in the Layout component via rootRoute.",
+  "frontend/src/components/Layout.tsx": "Persistent app shell with a crimson/gold gradient header showing the KBR Silks brand, desktop and mobile-responsive navigation with active state highlighting, and a branded footer with caffeine.ai attribution.",
+  "frontend/src/pages/Catalog.tsx": "Public saree catalog page with a hero banner, real-time search and fabric-type filter, responsive product grid with SareeCard components showing image, name, fabric, color, price, and stock, plus loading skeletons and empty states.",
+  "frontend/src/pages/AdminSarees.tsx": "Admin saree management page with a stats dashboard, responsive product grid with hover-reveal edit/delete actions, a full-featured add/edit modal with image upload and progress tracking, and a delete confirmation dialog.",
+  "frontend/src/pages/AdminOrders.tsx": "Admin orders page with status-count stats, a sortable table with inline status dropdowns (Pending/Confirmed/Shipped/Delivered) that update the backend immediately, and loading/empty states.",
+  "frontend/src/pages/AdminCustomers.tsx": "Admin customers page with stats, a searchable table showing name, phone, email, address, and order count, plus an add/edit modal form with validation for all customer fields.",
+  "frontend/index.html": "HTML entry point with the browser tab title updated to \"KBR Silks\"."
+}
