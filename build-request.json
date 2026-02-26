@@ -1,79 +1,35 @@
 {
   "kind": "build_request",
-  "title": "Fix saree list not updating after add/edit in both admin and user panels",
-  "projectName": "KBR Silks",
-  "priority": "high",
+  "title": "Update alternate contact number in business configuration",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "After a saree is added or updated in the admin panel (AdminSarees), the saree list in the admin panel must immediately reflect the change without requiring a manual page refresh. Ensure the React Query cache for the sarees query is properly invalidated and refetched after every addSaree, updateSaree, and deleteSaree mutation succeeds.",
+      "text": "Update the alternate phone number displayed in the app (in frontend/src/config/constants.ts) to 7981314611. Ensure this updated number appears wherever the alternate contact number is referenced in the UI (e.g., header, footer, contact info sections).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-recent-1",
-          "msg-recent-2"
+          "msg-latest"
         ],
         "quotes": [
-          "I am getting frustrated that after adding the sarees it is not at all updating",
-          "Yes and it is occurring in admin panel too"
+          "Update the alternate number with 7981314611"
         ]
       },
       "acceptanceCriteria": [
-        "When a saree is added via the admin panel form and saved, the saree list in AdminSarees updates immediately to show the new saree without a page reload.",
-        "When a saree is edited and saved, the updated saree details appear immediately in the AdminSarees list.",
-        "When a saree is deleted, it disappears from the AdminSarees list immediately.",
-        "The React Query invalidation for the sarees query key fires on mutation success in all three cases (add, update, delete)."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "After a saree is added or updated in the admin panel, the public Catalog page must also reflect the latest saree data without requiring a manual page refresh. Ensure the sarees query cache used by the Catalog page is invalidated and refetched whenever any saree mutation (add, update, delete) completes successfully.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-recent-1"
-        ],
-        "quotes": [
-          "I am getting frustrated that after adding the sarees it is not at all updating"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After adding a saree in the admin panel, navigating to the Catalog shows the new saree.",
-        "After updating a saree in the admin panel, the Catalog reflects the updated details.",
-        "After deleting a saree in the admin panel, the Catalog no longer shows the deleted saree.",
-        "The same React Query key is used for the sarees list across AdminSarees and Catalog so invalidation propagates to both."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Audit the useQueries.ts mutation hooks for sarees (addSaree, updateSaree, deleteSaree) and ensure their onSuccess callbacks call queryClient.invalidateQueries with the correct sarees query key. If the query key differs between admin and catalog views, unify it or invalidate all relevant keys. Also verify the QueryClient is not configured with an excessively long staleTime or cacheTime that would prevent refetching.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-recent-1",
-          "msg-recent-2"
-        ],
-        "quotes": [
-          "I am getting frustrated that after adding the sarees it is not at all updating",
-          "Yes and it is occurring in admin panel too"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All three saree mutation hooks (addSaree, updateSaree, deleteSaree) invalidate the sarees query cache on success.",
-        "The sarees query key used in AdminSarees and Catalog is consistent or both are invalidated.",
-        "The QueryClient staleTime for the sarees query is set to a value that allows fresh fetches after mutations (0 or a short interval).",
-        "No stale cached data is served to either panel after a mutation."
+        "The alternate contact number in frontend/src/config/constants.ts is set to 7981314611.",
+        "All UI locations that display the alternate phone number now show 7981314611.",
+        "The primary/main phone number and WhatsApp link remain unchanged."
       ]
     }
   ],
   "constraints": [
-    "Do not change the backend Motoko data model or CRUD API — the issue is in the frontend cache layer.",
-    "Do not edit files under frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts, frontend/src/main.tsx, or frontend/src/components/ui."
+    "Do not change the primary phone number or WhatsApp link — only the alternate number should be updated.",
+    "Do not modify any files under frontend/src/hooks/ (immutable paths)."
   ],
   "nonGoals": [
-    "Adding real-time/WebSocket-based updates.",
-    "Changes to the backend actor or data persistence logic.",
-    "Redesigning the admin or catalog UI layout."
+    "Adding new contact fields or UI sections.",
+    "Changing backend data models or logic.",
+    "Updating any other business configuration constants."
   ],
   "imageRequirements": {
     "required": [],

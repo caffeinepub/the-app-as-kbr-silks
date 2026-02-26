@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the saree list not updating in real-time after add, edit, or delete operations in both the admin panel and the public catalog.
+**Goal:** Update the alternate contact phone number in the app's business configuration to 7981314611.
 
 **Planned changes:**
-- Audit and fix the `addSaree`, `updateSaree`, and `deleteSaree` mutation hooks in `useQueries.ts` to call `queryClient.invalidateQueries` with the correct sarees query key on success.
-- Unify the sarees query key used across `AdminSarees` and the `Catalog` page, or ensure all relevant keys are invalidated after any mutation.
-- Verify the `QueryClient` is not configured with an excessively long `staleTime` or `cacheTime` that prevents refetching after mutations.
+- Update the alternate phone number constant in `frontend/src/config/constants.ts` to `7981314611`
+- Ensure all UI locations (header, footer, contact info sections) that display the alternate contact number reflect the new value
 
-**User-visible outcome:** After adding, editing, or deleting a saree in the admin panel, both the admin saree list and the public catalog immediately reflect the changes without requiring a manual page refresh.
+**User-visible outcome:** The alternate contact number shown throughout the app now displays 7981314611, while the primary phone number and WhatsApp link remain unchanged.

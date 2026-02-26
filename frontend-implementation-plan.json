@@ -1,61 +1,31 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix saree list not updating after add/edit in both admin and user panels",
+  "title": "Update alternate contact number in business configuration",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure AdminSarees page immediately reflects changes after add/update/delete operations without manual refresh",
+      "summary": "Update the alternate phone number to 7981314611 in constants and ensure all UI references display the updated number",
       "acceptanceCriteria": [
-        "When a saree is added via the admin panel form and saved, the saree list in AdminSarees updates immediately to show the new saree without a page reload.",
-        "When a saree is edited and saved, the updated saree details appear immediately in the AdminSarees list.",
-        "When a saree is deleted, it disappears from the AdminSarees list immediately.",
-        "The React Query invalidation for the sarees query key fires on mutation success in all three cases (add, update, delete)."
+        "The alternate contact number in frontend/src/config/constants.ts is set to 7981314611.",
+        "All UI locations that display the alternate phone number now show 7981314611.",
+        "The primary/main phone number and WhatsApp link remain unchanged."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/config/constants.ts",
           "operation": "modify",
-          "description": "Add queryClient.invalidateQueries({ queryKey: ['sarees'] }) in the onSuccess callback of useAddSaree, useUpdateSaree, and useDeleteSaree mutations to ensure the sarees list cache is invalidated and refetched immediately after each mutation completes successfully."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Ensure public Catalog page reflects latest saree data after admin panel mutations without manual refresh",
-      "acceptanceCriteria": [
-        "After adding a saree in the admin panel, navigating to the Catalog shows the new saree.",
-        "After updating a saree in the admin panel, the Catalog reflects the updated details.",
-        "After deleting a saree in the admin panel, the Catalog no longer shows the deleted saree.",
-        "The same React Query key is used for the sarees list across AdminSarees and Catalog so invalidation propagates to both."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Verify that both useGetAllSarees (used by Catalog) and the saree mutations use the consistent query key ['sarees'] so that invalidation in REQ-1 automatically propagates to the Catalog page. If a different key is currently in use, unify it to ['sarees'] across all saree-related queries and mutations."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Audit and fix React Query configuration to ensure proper cache invalidation and refetching for sarees",
-      "acceptanceCriteria": [
-        "All three saree mutation hooks (addSaree, updateSaree, deleteSaree) invalidate the sarees query cache on success.",
-        "The sarees query key used in AdminSarees and Catalog is consistent or both are invalidated.",
-        "The QueryClient staleTime for the sarees query is set to a value that allows fresh fetches after mutations (0 or a short interval).",
-        "No stale cached data is served to either panel after a mutation."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/main.tsx",
-          "operation": "modify",
-          "description": "Review the QueryClient configuration and ensure staleTime for sarees queries is set to 0 or a short interval (e.g., 1000ms) to prevent serving stale cached data after mutations. Verify that refetchOnMount and refetchOnWindowFocus are enabled for sarees queries to ensure fresh data is fetched when navigating between admin and catalog pages."
+          "description": "Update the alternate phone number constant to '7981314611'. Locate the existing alternate phone number field in the constants object and replace its value while leaving all other constants (primary phone, WhatsApp link, owner phone numbers) unchanged."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Confirm all saree mutation hooks include proper error handling and that onSuccess callbacks are executed. Add explicit queryClient.invalidateQueries calls for the ['sarees'] key in useAddSaree, useUpdateSaree, and useDeleteSaree if not already present. Ensure no conditional logic prevents invalidation from executing."
+          "description": "Verify that the Layout component (header and footer) correctly references the alternate phone number from constants.ts. If the alternate number is displayed in the header or footer contact info, ensure it pulls from the updated constant. No changes needed if the component already imports and uses the constant correctly."
+        },
+        {
+          "path": "frontend/src/pages/Catalog.tsx",
+          "operation": "modify",
+          "description": "Review any contact information sections on the Catalog page. If the alternate phone number is displayed (e.g., in a contact info banner, help section, or customer support area), ensure it references the updated constant from constants.ts. Update the import and usage if needed."
         }
       ]
     }

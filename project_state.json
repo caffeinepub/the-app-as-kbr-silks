@@ -1,43 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Saree management app with admin and user panels. Currently experiencing a critical bug where sarees added in the admin panel are not updating/reflecting in either the admin or user panel.",
-  "architectural_notes": [
-    "App has two panels: admin panel (for adding/managing sarees) and user panel (for viewing sarees)"
-  ],
-  "known_issues": [
-    "Sarees added in the admin panel do not update/reflect in either the admin panel or user panel — sync issue between data layer and UI"
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-after-a-saree-is-added-or-updated-in-the-admin-panel-adminsarees-the-saree-list-in-the-admin-panel-must-immediately-reflect-the-change-without-requiring-a-manual-page-refresh-ensure-the-react-query-cache-for-the-sarees-query-is-properly-invalidated-and-refetched-after-every-addsaree-updatesaree-and-deletesaree-mutation-succeeds",
-      "title": "After a saree is added or updated in the admin panel (AdminSarees), the saree list in the admin panel must immediately reflect the change without requiring a manual page refresh. Ensure the React Query cache for the sarees query is properly invalidated and refetched after every addSaree, updateSaree, and deleteSaree mutation succeeds.",
+      "id": "feature-update-the-alternate-phone-number-displayed-in-the-app-in-frontend-src-config-constants-ts-to-7981314611-ensure-this-updated-number-appears-wherever-the-alternate-contact-number-is-referenced-in-the-ui-e-g-header-footer-contact-info-sections",
+      "title": "Update the alternate phone number displayed in the app (in frontend/src/config/constants.ts) to 7981314611. Ensure this updated number appears wherever the alternate contact number is referenced in the UI (e.g., header, footer, contact info sections).",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-after-a-saree-is-added-or-updated-in-the-admin-panel-the-public-catalog-page-must-also-reflect-the-latest-saree-data-without-requiring-a-manual-page-refresh-ensure-the-sarees-query-cache-used-by-the-catalog-page-is-invalidated-and-refetched-whenever-any-saree-mutation-add-update-delete-completes-successfully",
-      "title": "After a saree is added or updated in the admin panel, the public Catalog page must also reflect the latest saree data without requiring a manual page refresh. Ensure the sarees query cache used by the Catalog page is invalidated and refetched whenever any saree mutation (add, update, delete) completes successfully.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-audit-the-usequeries-ts-mutation-hooks-for-sarees-addsaree-updatesaree-deletesaree-and-ensure-their-onsuccess-callbacks-call-queryclient-invalidatequeries-with-the-correct-sarees-query-key-if-the-query-key-differs-between-admin-and-catalog-views-unify-it-or-invalidate-all-relevant-keys-also-verify-the-queryclient-is-not-configured-with-an-excessively-long-staletime-or-cachetime-that-would-prevent-refetching",
-      "title": "Audit the useQueries.ts mutation hooks for sarees (addSaree, updateSaree, deleteSaree) and ensure their onSuccess callbacks call queryClient.invalidateQueries with the correct sarees query key. If the query key differs between admin and catalog views, unify it or invalidate all relevant keys. Also verify the QueryClient is not configured with an excessively long staleTime or cacheTime that would prevent refetching.",
-      "reqIds": [
-        "REQ-3"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "gameProjectType": "none",
-  "projectName": "KBR Silks",
+  "projectName": "Update alternate contact number in business configuration",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
