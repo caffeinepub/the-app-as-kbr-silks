@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { type Saree, type Order, type Customer, type OrderedItem, FabricType, OrderStatus, ExternalBlob } from '../backend';
+import { type Saree, type Order, type Customer, type OrderedItem, type ProductDetail, FabricType, OrderStatus, ExternalBlob } from '../backend';
+import { retryWithBackoff, parseBackendError } from '../utils/retryWithBackoff';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 export const QUERY_KEYS = {
@@ -36,18 +37,26 @@ export function useAddSaree() {
       image: ExternalBlob;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      return actor.addSaree(
-        params.name,
-        params.description,
-        params.fabricType,
-        params.color,
-        params.price,
-        params.stock,
-        params.image
+      return retryWithBackoff(
+        () =>
+          actor.addSaree(
+            params.name,
+            params.description,
+            params.fabricType,
+            params.color,
+            params.price,
+            params.stock,
+            params.image
+          ),
+        { maxAttempts: 3, baseDelayMs: 1000 }
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
+    },
+    onError: (err) => {
+      // Error message is parsed and surfaced in the UI via mutation.error
+      const _ = parseBackendError(err);
     },
   });
 }
@@ -67,19 +76,26 @@ export function useUpdateSaree() {
       image: ExternalBlob;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      return actor.updateSaree(
-        params.id,
-        params.name,
-        params.description,
-        params.fabricType,
-        params.color,
-        params.price,
-        params.stock,
-        params.image
+      return retryWithBackoff(
+        () =>
+          actor.updateSaree(
+            params.id,
+            params.name,
+            params.description,
+            params.fabricType,
+            params.color,
+            params.price,
+            params.stock,
+            params.image
+          ),
+        { maxAttempts: 3, baseDelayMs: 1000 }
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
+    },
+    onError: (err) => {
+      const _ = parseBackendError(err);
     },
   });
 }
@@ -108,6 +124,7 @@ export function useGetAllOrders() {
       return actor.getAllOrders();
     },
     enabled: !!actor && !isFetching,
+    refetchInterval: 15000, // Auto-refresh every 15 seconds for real-time order visibility
   });
 }
 
@@ -119,9 +136,15 @@ export function usePlaceOrder() {
       customerName: string;
       customerPhone: string;
       items: OrderedItem[];
+      productDetails: ProductDetail[];
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      return actor.placeOrder(params.customerName, params.customerPhone, params.items);
+      return actor.placeOrder(
+        params.customerName,
+        params.customerPhone,
+        params.items,
+        params.productDetails
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.orders });

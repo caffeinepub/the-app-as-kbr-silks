@@ -25,6 +25,11 @@ export const FabricType = IDL.Variant({
   'Mysore' : IDL.Null,
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
 export const Customer = IDL.Record({
   'totalOrders' : IDL.Nat,
   'name' : IDL.Text,
@@ -35,6 +40,7 @@ export const Customer = IDL.Record({
 export const OrderStatus = IDL.Variant({
   'Delivered' : IDL.Null,
   'Confirmed' : IDL.Null,
+  'Cancelled' : IDL.Null,
   'Shipped' : IDL.Null,
   'Pending' : IDL.Null,
 });
@@ -43,14 +49,23 @@ export const OrderedItem = IDL.Record({
   'sareeId' : IDL.Nat,
   'quantity' : IDL.Nat,
 });
+export const ProductDetail = IDL.Record({
+  'fabricType' : FabricType,
+  'name' : IDL.Text,
+  'color' : IDL.Text,
+  'quantity' : IDL.Nat,
+  'unitPrice' : IDL.Nat,
+});
 export const Order = IDL.Record({
   'id' : IDL.Nat,
   'customerName' : IDL.Text,
   'status' : OrderStatus,
+  'paymentStatus' : IDL.Text,
   'customerPhone' : IDL.Text,
   'orderDate' : Time,
   'items' : IDL.Vec(OrderedItem),
   'totalPrice' : IDL.Nat,
+  'productDetails' : IDL.Vec(ProductDetail),
 });
 export const Saree = IDL.Record({
   'id' : IDL.Nat,
@@ -62,6 +77,7 @@ export const Saree = IDL.Record({
   'image' : ExternalBlob,
   'price' : IDL.Nat,
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -90,6 +106,7 @@ export const idlService = IDL.Service({
       [],
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addCustomer' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
       [],
@@ -105,28 +122,39 @@ export const idlService = IDL.Service({
         IDL.Nat,
         ExternalBlob,
       ],
-      [IDL.Nat],
+      [IDL.Variant({ 'StorageError' : IDL.Text })],
       [],
     ),
+  'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteSaree' : IDL.Func([IDL.Nat], [], []),
   'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAllSarees' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCustomer' : IDL.Func([IDL.Text], [Customer], ['query']),
   'getOrder' : IDL.Func([IDL.Nat], [Order], ['query']),
   'getSaree' : IDL.Func([IDL.Nat], [Saree], ['query']),
   'getSareesByPrice' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'placeOrder' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Vec(OrderedItem)],
+      [IDL.Text, IDL.Text, IDL.Vec(OrderedItem), IDL.Vec(ProductDetail)],
       [IDL.Nat],
       [],
     ),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'updateCustomer' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
       [],
       [],
     ),
   'updateOrderStatus' : IDL.Func([IDL.Nat, OrderStatus], [], []),
+  'updatePaymentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'updateSaree' : IDL.Func(
       [
         IDL.Nat,
@@ -138,7 +166,7 @@ export const idlService = IDL.Service({
         IDL.Nat,
         ExternalBlob,
       ],
-      [],
+      [IDL.Variant({ 'StorageError' : IDL.Text })],
       [],
     ),
 });
@@ -163,6 +191,11 @@ export const idlFactory = ({ IDL }) => {
     'Mysore' : IDL.Null,
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
   const Customer = IDL.Record({
     'totalOrders' : IDL.Nat,
     'name' : IDL.Text,
@@ -173,19 +206,29 @@ export const idlFactory = ({ IDL }) => {
   const OrderStatus = IDL.Variant({
     'Delivered' : IDL.Null,
     'Confirmed' : IDL.Null,
+    'Cancelled' : IDL.Null,
     'Shipped' : IDL.Null,
     'Pending' : IDL.Null,
   });
   const Time = IDL.Int;
   const OrderedItem = IDL.Record({ 'sareeId' : IDL.Nat, 'quantity' : IDL.Nat });
+  const ProductDetail = IDL.Record({
+    'fabricType' : FabricType,
+    'name' : IDL.Text,
+    'color' : IDL.Text,
+    'quantity' : IDL.Nat,
+    'unitPrice' : IDL.Nat,
+  });
   const Order = IDL.Record({
     'id' : IDL.Nat,
     'customerName' : IDL.Text,
     'status' : OrderStatus,
+    'paymentStatus' : IDL.Text,
     'customerPhone' : IDL.Text,
     'orderDate' : Time,
     'items' : IDL.Vec(OrderedItem),
     'totalPrice' : IDL.Nat,
+    'productDetails' : IDL.Vec(ProductDetail),
   });
   const Saree = IDL.Record({
     'id' : IDL.Nat,
@@ -197,6 +240,7 @@ export const idlFactory = ({ IDL }) => {
     'image' : ExternalBlob,
     'price' : IDL.Nat,
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   
   return IDL.Service({
     '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -225,6 +269,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addCustomer' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
         [],
@@ -240,28 +285,39 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           ExternalBlob,
         ],
-        [IDL.Nat],
+        [IDL.Variant({ 'StorageError' : IDL.Text })],
         [],
       ),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteSaree' : IDL.Func([IDL.Nat], [], []),
     'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAllSarees' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCustomer' : IDL.Func([IDL.Text], [Customer], ['query']),
     'getOrder' : IDL.Func([IDL.Nat], [Order], ['query']),
     'getSaree' : IDL.Func([IDL.Nat], [Saree], ['query']),
     'getSareesByPrice' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'placeOrder' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Vec(OrderedItem)],
+        [IDL.Text, IDL.Text, IDL.Vec(OrderedItem), IDL.Vec(ProductDetail)],
         [IDL.Nat],
         [],
       ),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'updateCustomer' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
         [],
         [],
       ),
     'updateOrderStatus' : IDL.Func([IDL.Nat, OrderStatus], [], []),
+    'updatePaymentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'updateSaree' : IDL.Func(
         [
           IDL.Nat,
@@ -273,7 +329,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           ExternalBlob,
         ],
-        [],
+        [IDL.Variant({ 'StorageError' : IDL.Text })],
         [],
       ),
   });

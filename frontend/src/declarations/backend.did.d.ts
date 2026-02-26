@@ -25,16 +25,26 @@ export interface Order {
   'id' : bigint,
   'customerName' : string,
   'status' : OrderStatus,
+  'paymentStatus' : string,
   'customerPhone' : string,
   'orderDate' : Time,
   'items' : Array<OrderedItem>,
   'totalPrice' : bigint,
+  'productDetails' : Array<ProductDetail>,
 }
 export type OrderStatus = { 'Delivered' : null } |
   { 'Confirmed' : null } |
+  { 'Cancelled' : null } |
   { 'Shipped' : null } |
   { 'Pending' : null };
 export interface OrderedItem { 'sareeId' : bigint, 'quantity' : bigint }
+export interface ProductDetail {
+  'fabricType' : FabricType,
+  'name' : string,
+  'color' : string,
+  'quantity' : bigint,
+  'unitPrice' : bigint,
+}
 export interface Saree {
   'id' : bigint,
   'fabricType' : FabricType,
@@ -46,6 +56,10 @@ export interface Saree {
   'price' : bigint,
 }
 export type Time = bigint;
+export interface UserProfile { 'name' : string }
+export type UserRole = { 'admin' : null } |
+  { 'user' : null } |
+  { 'guest' : null };
 export interface _CaffeineStorageCreateCertificateResult {
   'method' : string,
   'blob_hash' : string,
@@ -73,31 +87,42 @@ export interface _SERVICE {
     _CaffeineStorageRefillResult
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addCustomer' : ActorMethod<
     [string, string, [] | [string], string],
     undefined
   >,
   'addSaree' : ActorMethod<
     [string, string, FabricType, string, bigint, bigint, ExternalBlob],
-    bigint
+    { 'StorageError' : string }
   >,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteSaree' : ActorMethod<[bigint], undefined>,
   'getAllCustomers' : ActorMethod<[], Array<Customer>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAllSarees' : ActorMethod<[], Array<Saree>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCustomer' : ActorMethod<[string], Customer>,
   'getOrder' : ActorMethod<[bigint], Order>,
   'getSaree' : ActorMethod<[bigint], Saree>,
   'getSareesByPrice' : ActorMethod<[], Array<Saree>>,
-  'placeOrder' : ActorMethod<[string, string, Array<OrderedItem>], bigint>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'isCallerAdmin' : ActorMethod<[], boolean>,
+  'placeOrder' : ActorMethod<
+    [string, string, Array<OrderedItem>, Array<ProductDetail>],
+    bigint
+  >,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateCustomer' : ActorMethod<
     [string, string, [] | [string], string],
     undefined
   >,
   'updateOrderStatus' : ActorMethod<[bigint, OrderStatus], undefined>,
+  'updatePaymentStatus' : ActorMethod<[bigint, string], undefined>,
   'updateSaree' : ActorMethod<
     [bigint, string, string, FabricType, string, bigint, bigint, ExternalBlob],
-    undefined
+    { 'StorageError' : string }
   >,
 }
 export declare const idlService: IDL.ServiceClass;

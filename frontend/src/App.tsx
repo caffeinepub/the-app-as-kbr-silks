@@ -4,6 +4,7 @@ import Catalog from './pages/Catalog';
 import AdminSarees from './pages/AdminSarees';
 import AdminOrders from './pages/AdminOrders';
 import AdminCustomers from './pages/AdminCustomers';
+import OwnerVerificationGate from './components/OwnerVerificationGate';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -22,19 +23,31 @@ const catalogRoute = createRoute({
 const adminSareesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/sarees',
-  component: AdminSarees,
+  component: () => (
+    <OwnerVerificationGate>
+      <AdminSarees />
+    </OwnerVerificationGate>
+  ),
 });
 
 const adminOrdersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/orders',
-  component: AdminOrders,
+  component: () => (
+    <OwnerVerificationGate>
+      <AdminOrders />
+    </OwnerVerificationGate>
+  ),
 });
 
 const adminCustomersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/customers',
-  component: AdminCustomers,
+  component: () => (
+    <OwnerVerificationGate>
+      <AdminCustomers />
+    </OwnerVerificationGate>
+  ),
 });
 
 const routeTree = rootRoute.addChildren([

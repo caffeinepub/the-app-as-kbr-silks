@@ -1,64 +1,37 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "A business app for a silk saree business called KBR Silks. Includes features for managing and showcasing silk sarees, with catalog, orders, and customer management.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "projectStateVersion": 3,
+  "summary": "E-commerce saree shop with admin panel. User is experiencing issues adding sarees in the admin panel (timeout/error). Fix involves image compression, better error handling, optimized storage, and retry logic.",
+  "architectural_notes": [
+    "Backend runs on Internet Computer (ICP) canisters with ~2MB per-call message size limit",
+    "Saree image uploads must be compressed to under 1-2MB to avoid timeout errors"
+  ],
+  "known_issues": [
+    "Admin panel saree upload times out and shows 'can't add, try again' error — likely due to large image files or canister memory limits"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-design-and-apply-a-rich-elegant-visual-theme-inspired-by-traditional-indian-textiles-deep-jewel-tones-crimson-gold-ivory-deep-teal-ornate-typography-subtle-silk-texture-motifs-and-a-regal-layout-enforced-consistently-across-all-pages",
-      "title": "Design and apply a rich, elegant visual theme inspired by traditional Indian textiles — deep jewel tones (crimson, gold, ivory, deep teal), ornate typography, subtle silk-texture motifs, and a regal layout — enforced consistently across all pages.",
+      "id": "feature-add-client-side-image-compression-in-the-adminsarees-upload-form-before-sending-image-data-to-the-backend-compress-images-to-ensure-they-stay-within-the-internet-computer-s-2mb-message-size-limit-show-the-user-the-compressed-file-size-before-submission",
+      "title": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-saree-catalog-page-that-displays-all-sarees-in-a-responsive-grid-each-card-shows-the-saree-image-name-fabric-type-color-price-and-available-stock-include-a-search-bar-to-filter-by-name-or-fabric-type",
-      "title": "Create a Saree Catalog page that displays all sarees in a responsive grid. Each card shows the saree image, name, fabric type, color, price, and available stock. Include a search bar to filter by name or fabric type.",
+      "id": "feature-add-a-visible-upload-progress-indicator-and-loading-state-in-the-adminsarees-add-edit-modal-so-users-know-the-upload-is-in-progress-and-do-not-click-submit-multiple-times",
+      "title": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-automatic-retry-logic-up-to-3-attempts-with-exponential-backoff-to-the-saree-add-update-mutation-in-the-adminsarees-page-if-all-retries-fail-display-a-specific-error-message-describing-the-likely-cause-e-g-image-too-large-network-timeout-rather-than-a-generic-try-again-message",
+      "title": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-admin-panel-for-managing-the-saree-catalog-with-forms-to-add-a-new-saree-all-fields-edit-an-existing-saree-and-delete-a-saree-with-a-confirmation-prompt",
-      "title": "Create an Admin panel for managing the saree catalog — with forms to add a new saree (all fields), edit an existing saree, and delete a saree with a confirmation prompt.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-orders-management-page-in-the-admin-panel-that-lists-all-orders-in-a-table-with-columns-for-order-id-customer-name-phone-total-price-date-and-status-allow-the-admin-to-change-the-status-of-any-order-via-a-dropdown",
-      "title": "Create an Orders management page in the admin panel that lists all orders in a table with columns for order ID, customer name, phone, total price, date, and status. Allow the admin to change the status of any order via a dropdown.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-customers-page-in-the-admin-panel-that-lists-all-customers-in-a-table-showing-name-phone-email-address-and-order-count-include-the-ability-to-add-a-new-customer-and-edit-existing-customer-details-via-a-modal-form",
-      "title": "Create a Customers page in the admin panel that lists all customers in a table showing name, phone, email, address, and order count. Include the ability to add a new customer and edit existing customer details via a modal form.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-a-navigation-structure-with-a-top-header-showing-the-brand-name-silk-splendor-and-a-sidebar-or-tab-navigation-for-catalog-public-view-and-admin-sections-manage-sarees-orders-and-customers",
-      "title": "Build a navigation structure with a top header showing the brand name 'Silk Splendor' and a sidebar or tab navigation for: Catalog (public view), and Admin sections — Manage Sarees, Orders, and Customers.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-brand-name-displayed-in-the-app-header-and-all-other-locations-from-silk-splendor-to-kbr-silks-this-includes-the-top-header-in-layout-tsx-the-html-page-title-in-index-html-and-any-other-visible-references-to-the-old-brand-name-throughout-the-ui",
-      "title": "Update the brand name displayed in the app header and all other locations from 'Silk Splendor' to 'KBR Silks'. This includes the top header in Layout.tsx, the HTML page title in index.html, and any other visible references to the old brand name throughout the UI.",
-      "reqIds": [
-        "REQ-10"
       ],
       "version": 1
     }
@@ -66,49 +39,21 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Silk saree product catalog with images and details",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Order management for customers",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Customer management / contact list",
+      "summary": "Fix admin panel saree upload: add image compression, retry logic, better error messages, and optimized backend storage",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Build a backend data model for silk saree products, storing: name, description, fabric type (e.g., Kanjivaram, Banarasi, Mysore), color, price, stock quantity, and an image URL. Support CRUD operations: add, update, delete, and list all products.",
+      "summary": "Optimize the backend saree storage in backend/main.mo to store image data as a Blob or chunked format if necessary, and ensure the addSaree and updateSaree methods handle large payloads gracefully by returning a descriptive error variant instead of trapping.",
       "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Build a backend data model for orders. Each order stores: customer name, customer phone, list of ordered saree IDs with quantities, total price, order date, and status (Pending / Confirmed / Shipped / Delivered). Support operations: place order, update status, list all orders, and get order by ID.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Build a backend data model for customers storing: name, phone number, email (optional), address, and total orders count. Support operations: add customer, update customer info, list all customers, and get customer by ID.",
-      "reqIds": [
-        "REQ-7"
+        "REQ-4"
       ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Silk Saree Business App",
+  "projectName": "Saree Shop",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

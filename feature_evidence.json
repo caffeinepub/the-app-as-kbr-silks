@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-brand-name-displayed-in-the-app-header-and-all-other-locations-from-silk-splendor-to-kbr-silks-this-includes-the-top-header-in-layout-tsx-the-html-page-title-in-index-html-and-any-other-visible-references-to-the-old-brand-name-throughout-the-ui",
-      "featureTitle": "Update the brand name displayed in the app header and all other locations from 'Silk Splendor' to 'KBR Silks'. This includes the top header in Layout.tsx, the HTML page title in index.html, and any other visible references to the old brand name throughout the UI.",
+      "featureId": "feature-add-client-side-image-compression-in-the-adminsarees-upload-form-before-sending-image-data-to-the-backend-compress-images-to-ensure-they-stay-within-the-internet-computer-s-2mb-message-size-limit-show-the-user-the-compressed-file-size-before-submission",
+      "featureTitle": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
       "files": [
-        "frontend/index.html",
-        "frontend/src/components/Layout.tsx"
+        "frontend/src/pages/AdminSarees.tsx",
+        "frontend/src/utils/imageCompression.ts"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -14,10 +14,53 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-10"
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-visible-upload-progress-indicator-and-loading-state-in-the-adminsarees-add-edit-modal-so-users-know-the-upload-is-in-progress-and-do-not-click-submit-multiple-times",
+      "featureTitle": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "files": [
+        "frontend/src/pages/AdminSarees.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-automatic-retry-logic-up-to-3-attempts-with-exponential-backoff-to-the-saree-add-update-mutation-in-the-adminsarees-page-if-all-retries-fail-display-a-specific-error-message-describing-the-likely-cause-e-g-image-too-large-network-timeout-rather-than-a-generic-try-again-message",
+      "featureTitle": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/AdminSarees.tsx",
+        "frontend/src/utils/retryWithBackoff.ts"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

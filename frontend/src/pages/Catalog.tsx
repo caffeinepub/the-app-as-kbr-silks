@@ -1,10 +1,18 @@
 import { useState, useMemo } from 'react';
-import { Search, Tag, Layers, Package, IndianRupee } from 'lucide-react';
+import { Search, Tag, Layers, Package, IndianRupee, Phone, ShoppingCart } from 'lucide-react';
+import { SiWhatsapp } from 'react-icons/si';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetAllSarees } from '@/hooks/useQueries';
 import { type Saree, FabricType } from '../backend';
+import {
+  BUSINESS_PHONE,
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_ALT,
+  BUSINESS_PHONE_ALT_DISPLAY,
+  WHATSAPP_LINK,
+} from '@/config/constants';
+import OrderPlacementModal from '@/components/OrderPlacementModal';
 
 const FABRIC_LABELS: Record<FabricType, string> = {
   [FabricType.Kanjivaram]: 'Kanjivaram',
@@ -18,13 +26,14 @@ const FABRIC_COLORS: Record<FabricType, string> = {
   [FabricType.Mysore]: 'oklch(0.52 0.14 140)',
 };
 
-function SareeCard({ saree }: { saree: Saree }) {
+function SareeCard({ saree, onOrderNow }: { saree: Saree; onOrderNow: (saree: Saree) => void }) {
   const imageUrl = saree.image?.getDirectURL?.() || '/assets/generated/saree-placeholder.dim_400x500.png';
   const fabricLabel = FABRIC_LABELS[saree.fabricType] ?? String(saree.fabricType);
   const fabricColor = FABRIC_COLORS[saree.fabricType] ?? 'oklch(0.52 0.12 195)';
+  const isOutOfStock = Number(saree.stock) === 0;
 
   return (
-    <article className="saree-card group">
+    <article className="saree-card group flex flex-col">
       <div className="relative overflow-hidden" style={{ aspectRatio: '4/5' }}>
         <img
           src={imageUrl}
@@ -43,14 +52,15 @@ function SareeCard({ saree }: { saree: Saree }) {
             {fabricLabel}
           </span>
         </div>
-        {/* Stock badge */}
-        {Number(saree.stock) === 0 && (
+        {/* Out of stock overlay */}
+        {isOutOfStock && (
           <div className="absolute inset-0 flex items-center justify-center"
             style={{ background: 'oklch(0.14 0.04 22 / 0.6)' }}>
             <span className="text-ivory font-heading font-semibold text-lg tracking-wide">Out of Stock</span>
           </div>
         )}
-        {Number(saree.stock) > 0 && Number(saree.stock) <= 3 && (
+        {/* Low stock badge */}
+        {!isOutOfStock && Number(saree.stock) <= 3 && (
           <div className="absolute top-3 right-3">
             <span className="text-xs font-body font-semibold px-2 py-1 rounded-full text-white"
               style={{ background: 'oklch(0.55 0.22 25)' }}>
@@ -60,7 +70,7 @@ function SareeCard({ saree }: { saree: Saree }) {
         )}
       </div>
 
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <h3 className="font-heading font-semibold text-base leading-tight mb-1 text-foreground line-clamp-1">
           {saree.name}
         </h3>
@@ -81,7 +91,7 @@ function SareeCard({ saree }: { saree: Saree }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-0.5">
             <IndianRupee size={14} className="text-gold-dark" />
             <span className="font-heading font-bold text-lg" style={{ color: 'oklch(0.38 0.16 22)' }}>
@@ -93,6 +103,34 @@ function SareeCard({ saree }: { saree: Saree }) {
             <span>{Number(saree.stock)} in stock</span>
           </div>
         </div>
+
+        {/* Order Now Button */}
+        <button
+          onClick={() => !isOutOfStock && onOrderNow(saree)}
+          disabled={isOutOfStock}
+          className="mt-auto w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm font-heading font-semibold text-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={
+            isOutOfStock
+              ? {
+                  background: 'oklch(0.88 0.025 70)',
+                  color: 'oklch(0.55 0.04 70)',
+                }
+              : {
+                  background: 'linear-gradient(135deg, oklch(0.38 0.16 22), oklch(0.52 0.18 22))',
+                  color: 'oklch(0.97 0.008 85)',
+                  boxShadow: '0 2px 8px oklch(0.38 0.16 22 / 0.3)',
+                }
+          }
+        >
+          {isOutOfStock ? (
+            'Out of Stock'
+          ) : (
+            <>
+              <ShoppingCart size={14} />
+              Order Now
+            </>
+          )}
+        </button>
       </div>
     </article>
   );
@@ -110,6 +148,7 @@ function SareeCardSkeleton() {
           <Skeleton className="h-5 w-20" />
           <Skeleton className="h-4 w-16" />
         </div>
+        <Skeleton className="h-9 w-full mt-2" />
       </div>
     </div>
   );
@@ -118,6 +157,7 @@ function SareeCardSkeleton() {
 export default function Catalog() {
   const [search, setSearch] = useState('');
   const [selectedFabric, setSelectedFabric] = useState<FabricType | 'all'>('all');
+  const [orderModalSaree, setOrderModalSaree] = useState<Saree | null>(null);
   const { data: sarees, isLoading, error } = useGetAllSarees();
 
   const filtered = useMemo(() => {
@@ -168,6 +208,64 @@ export default function Catalog() {
         </div>
       </div>
 
+      {/* Contact Banner */}
+      <div className="border-b"
+        style={{
+          background: 'linear-gradient(90deg, oklch(0.26 0.12 22) 0%, oklch(0.34 0.14 22) 50%, oklch(0.26 0.12 22) 100%)',
+          borderColor: 'oklch(0.78 0.14 72 / 0.25)'
+        }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-center">
+            <p className="font-body text-xs" style={{ color: 'oklch(0.78 0.14 72 / 0.8)' }}>
+              Need help choosing a saree? Reach us directly:
+            </p>
+
+            {/* Phone numbers */}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <a
+                href={`tel:${BUSINESS_PHONE}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-heading font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{
+                  background: 'linear-gradient(135deg, oklch(0.62 0.16 65), oklch(0.78 0.14 72))',
+                  color: 'oklch(0.18 0.04 30)',
+                }}
+              >
+                <Phone size={12} />
+                {BUSINESS_PHONE_DISPLAY}
+              </a>
+              <a
+                href={`tel:${BUSINESS_PHONE_ALT}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-xs transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{
+                  background: 'oklch(0.38 0.10 22 / 0.6)',
+                  border: '1px solid oklch(0.78 0.14 72 / 0.25)',
+                  color: 'oklch(0.88 0.08 75)',
+                }}
+              >
+                <Phone size={11} />
+                {BUSINESS_PHONE_ALT_DISPLAY}
+                <span className="opacity-70">(Alt)</span>
+              </a>
+            </div>
+
+            {/* WhatsApp Button */}
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-full font-heading font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, oklch(0.52 0.18 145), oklch(0.62 0.20 145))',
+                color: 'oklch(0.98 0.01 85)',
+              }}
+            >
+              <SiWhatsapp size={14} />
+              WhatsApp Us
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="sticky top-16 z-30 border-b shadow-xs"
         style={{ background: 'oklch(0.99 0.004 80)', borderColor: 'oklch(0.88 0.025 70)' }}>
@@ -180,31 +278,30 @@ export default function Catalog() {
                 placeholder="Search by name, fabric, or color..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 font-body text-sm border-border focus:ring-crimson"
+                className="pl-9 font-body text-sm"
               />
             </div>
 
             {/* Fabric Filter */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-body text-muted-foreground flex items-center gap-1">
-                <Layers size={12} /> Filter:
+                <Layers size={13} /> Filter:
               </span>
               {(['all', ...Object.values(FabricType)] as const).map((fabric) => (
                 <button
                   key={fabric}
                   onClick={() => setSelectedFabric(fabric)}
-                  className={`text-xs font-body font-medium px-3 py-1.5 rounded-full border transition-all duration-200 ${
+                  className={`text-xs font-body px-3 py-1.5 rounded-full border transition-all duration-150 ${
                     selectedFabric === fabric
-                      ? 'border-transparent text-white'
-                      : 'border-border text-muted-foreground hover:border-gold/60 hover:text-foreground'
+                      ? 'border-transparent font-semibold'
+                      : 'border-border text-muted-foreground hover:border-gold-dark hover:text-foreground'
                   }`}
                   style={selectedFabric === fabric ? {
-                    background: fabric === 'all'
-                      ? 'linear-gradient(135deg, oklch(0.38 0.16 22), oklch(0.52 0.18 22))'
-                      : FABRIC_COLORS[fabric as FabricType],
+                    background: 'linear-gradient(135deg, oklch(0.62 0.16 65), oklch(0.78 0.14 72))',
+                    color: 'oklch(0.18 0.04 30)',
                   } : {}}
                 >
-                  {fabric === 'all' ? 'All Fabrics' : FABRIC_LABELS[fabric as FabricType]}
+                  {fabric === 'all' ? 'All Fabrics' : FABRIC_LABELS[fabric]}
                 </button>
               ))}
             </div>
@@ -212,69 +309,71 @@ export default function Catalog() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Product Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats bar */}
-        {!isLoading && sarees && (
+        {/* Results count */}
+        {!isLoading && !error && (
           <div className="flex items-center justify-between mb-6">
-            <p className="text-sm font-body text-muted-foreground">
-              Showing <span className="font-semibold text-foreground">{filtered.length}</span> of{' '}
-              <span className="font-semibold text-foreground">{sarees.length}</span> sarees
+            <p className="text-sm font-body text-muted-foreground flex items-center gap-1.5">
+              <Tag size={14} />
+              {filtered.length} {filtered.length === 1 ? 'saree' : 'sarees'} found
+              {selectedFabric !== 'all' && (
+                <span> · <span className="font-medium text-foreground">{FABRIC_LABELS[selectedFabric]}</span></span>
+              )}
             </p>
-            {(search || selectedFabric !== 'all') && (
-              <button
-                onClick={() => { setSearch(''); setSelectedFabric('all'); }}
-                className="text-xs font-body text-crimson hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
           </div>
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="text-center py-16">
-            <p className="font-body text-destructive">Failed to load sarees. Please try again.</p>
-          </div>
-        )}
-
-        {/* Loading */}
+        {/* Loading State */}
         {isLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {Array.from({ length: 10 }).map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
               <SareeCardSkeleton key={i} />
             ))}
           </div>
         )}
 
-        {/* Empty state */}
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <p className="font-body text-destructive">Failed to load sarees. Please try again.</p>
+          </div>
+        )}
+
+        {/* Empty State */}
         {!isLoading && !error && filtered.length === 0 && (
           <div className="text-center py-20">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{ background: 'oklch(0.93 0.012 75)' }}>
-              <Tag size={28} className="text-muted-foreground" />
+              <Search size={28} className="text-muted-foreground" />
             </div>
-            <h3 className="font-heading text-xl font-semibold mb-2 text-foreground">
-              {sarees?.length === 0 ? 'No Sarees Yet' : 'No Results Found'}
-            </h3>
-            <p className="font-body text-sm text-muted-foreground max-w-sm mx-auto">
-              {sarees?.length === 0
-                ? 'The catalog is empty. Add sarees from the Admin panel to get started.'
-                : 'Try adjusting your search or filter to find what you\'re looking for.'}
+            <h3 className="font-heading text-xl font-semibold mb-2">No Sarees Found</h3>
+            <p className="font-body text-sm text-muted-foreground">
+              Try adjusting your search or filter criteria.
             </p>
           </div>
         )}
 
-        {/* Grid */}
+        {/* Product Grid */}
         {!isLoading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filtered.map((saree) => (
-              <SareeCard key={String(saree.id)} saree={saree} />
+              <SareeCard
+                key={String(saree.id)}
+                saree={saree}
+                onOrderNow={setOrderModalSaree}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {/* Order Placement Modal */}
+      <OrderPlacementModal
+        saree={orderModalSaree}
+        open={orderModalSaree !== null}
+        onClose={() => setOrderModalSaree(null)}
+      />
     </div>
   );
 }

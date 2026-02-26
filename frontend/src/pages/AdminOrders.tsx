@@ -1,34 +1,58 @@
 import { useState, useMemo } from 'react';
-import { ArrowUpDown, ChevronUp, ChevronDown, Loader2, ShoppingBag } from 'lucide-react';
+import { ArrowUpDown, ChevronUp, ChevronDown, Loader2, ShoppingBag, IndianRupee } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGetAllOrders, useUpdateOrderStatus } from '@/hooks/useQueries';
-import { OrderStatus } from '../backend';
+import { OrderStatus, FabricType } from '../backend';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   [OrderStatus.Pending]: 'Pending',
   [OrderStatus.Confirmed]: 'Confirmed',
   [OrderStatus.Shipped]: 'Shipped',
   [OrderStatus.Delivered]: 'Delivered',
+  [OrderStatus.Cancelled]: 'Cancelled',
 };
 
 const STATUS_STYLES: Record<OrderStatus, { bg: string; text: string }> = {
-  [OrderStatus.Pending]: { bg: 'oklch(0.82 0.12 75 / 0.15)', text: 'oklch(0.62 0.16 65)' },
-  [OrderStatus.Confirmed]: { bg: 'oklch(0.52 0.12 195 / 0.15)', text: 'oklch(0.42 0.12 195)' },
-  [OrderStatus.Shipped]: { bg: 'oklch(0.52 0.14 260 / 0.15)', text: 'oklch(0.42 0.14 260)' },
-  [OrderStatus.Delivered]: { bg: 'oklch(0.52 0.14 140 / 0.15)', text: 'oklch(0.38 0.14 140)' },
+  [OrderStatus.Pending]:   { bg: 'oklch(0.82 0.12 75 / 0.18)',  text: 'oklch(0.55 0.16 65)' },
+  [OrderStatus.Confirmed]: { bg: 'oklch(0.52 0.12 195 / 0.15)', text: 'oklch(0.38 0.12 195)' },
+  [OrderStatus.Shipped]:   { bg: 'oklch(0.52 0.14 260 / 0.15)', text: 'oklch(0.38 0.14 260)' },
+  [OrderStatus.Delivered]: { bg: 'oklch(0.52 0.14 140 / 0.15)', text: 'oklch(0.32 0.14 140)' },
+  [OrderStatus.Cancelled]: { bg: 'oklch(0.52 0.22 25 / 0.12)',  text: 'oklch(0.45 0.20 25)' },
+};
+
+const FABRIC_LABELS: Record<FabricType, string> = {
+  [FabricType.Kanjivaram]: 'Kanjivaram',
+  [FabricType.Banarasi]: 'Banarasi',
+  [FabricType.Mysore]: 'Mysore',
 };
 
 type SortKey = 'id' | 'customerName' | 'totalPrice' | 'orderDate' | 'status';
 type SortDir = 'asc' | 'desc';
 
-function formatDate(time: bigint): string {
+function formatDateTime(time: bigint): string {
   const ms = Number(time) / 1_000_000;
-  return new Date(ms).toLocaleDateString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric',
+  return new Date(ms).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
   });
+}
+
+function StatusBadge({ status }: { status: OrderStatus }) {
+  const style = STATUS_STYLES[status];
+  return (
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-body font-semibold"
+      style={{ background: style.bg, color: style.text }}
+    >
+      {STATUS_LABELS[status]}
+    </span>
+  );
 }
 
 function StatusCell({ orderId, currentStatus }: { orderId: bigint; currentStatus: OrderStatus }) {
@@ -58,7 +82,13 @@ function StatusCell({ orderId, currentStatus }: { orderId: bigint; currentStatus
         <SelectContent>
           {Object.values(OrderStatus).map((s) => (
             <SelectItem key={s} value={s} className="text-xs font-body">
-              {STATUS_LABELS[s]}
+              <span className="flex items-center gap-2">
+                <span
+                  className="inline-block w-2 h-2 rounded-full"
+                  style={{ background: STATUS_STYLES[s].text }}
+                />
+                {STATUS_LABELS[s]}
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -105,11 +135,11 @@ export default function AdminOrders() {
   };
 
   const statusCounts = useMemo(() => {
-    if (!orders) return {};
+    if (!orders) return {} as Record<OrderStatus, number>;
     return orders.reduce((acc, o) => {
       acc[o.status] = (acc[o.status] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<OrderStatus, number>);
   }, [orders]);
 
   return (
@@ -123,7 +153,7 @@ export default function AdminOrders() {
           </p>
           <h1 className="font-heading text-3xl font-bold text-ivory">Orders</h1>
           <p className="font-body text-sm mt-1" style={{ color: 'oklch(0.92 0.02 75 / 0.7)' }}>
-            View and manage all customer orders
+            View and manage all customer orders · Auto-refreshes every 15 seconds
           </p>
         </div>
       </div>
@@ -131,7 +161,7 @@ export default function AdminOrders() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         {!isLoading && orders && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
             {Object.values(OrderStatus).map((status) => {
               const style = STATUS_STYLES[status];
               return (
@@ -173,7 +203,7 @@ export default function AdminOrders() {
             </div>
             <h3 className="font-heading text-xl font-semibold mb-2">No Orders Yet</h3>
             <p className="font-body text-sm text-muted-foreground">
-              Orders placed by customers will appear here.
+              Orders placed by customers will appear here automatically.
             </p>
           </div>
         )}
@@ -186,16 +216,22 @@ export default function AdminOrders() {
                 <TableHeader>
                   <TableRow style={{ background: 'oklch(0.93 0.012 75)' }}>
                     {[
-                      { key: 'id' as SortKey, label: 'Order ID' },
+                      { key: 'id' as SortKey,           label: 'Order ID' },
                       { key: 'customerName' as SortKey, label: 'Customer' },
-                      { key: null, label: 'Phone' },
-                      { key: 'totalPrice' as SortKey, label: 'Total' },
-                      { key: 'orderDate' as SortKey, label: 'Date' },
-                      { key: 'status' as SortKey, label: 'Status' },
+                      { key: null,                       label: 'Phone' },
+                      { key: null,                       label: 'Product' },
+                      { key: null,                       label: 'Fabric' },
+                      { key: null,                       label: 'Color' },
+                      { key: null,                       label: 'Qty' },
+                      { key: null,                       label: 'Unit Price' },
+                      { key: 'totalPrice' as SortKey,   label: 'Total' },
+                      { key: null,                       label: 'Payment' },
+                      { key: 'orderDate' as SortKey,    label: 'Date & Time' },
+                      { key: 'status' as SortKey,       label: 'Status' },
                     ].map(({ key, label }) => (
                       <TableHead
                         key={label}
-                        className={`font-body text-xs font-semibold uppercase tracking-wide text-foreground ${key ? 'cursor-pointer select-none hover:text-crimson' : ''}`}
+                        className={`font-body text-xs font-semibold uppercase tracking-wide text-foreground whitespace-nowrap ${key ? 'cursor-pointer select-none hover:text-crimson' : ''}`}
                         onClick={key ? () => handleSort(key) : undefined}
                       >
                         <span className="flex items-center">
@@ -207,27 +243,104 @@ export default function AdminOrders() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sorted.map((order) => (
-                    <TableRow key={String(order.id)} className="admin-table-row">
-                      <TableCell className="font-body text-sm font-semibold" style={{ color: 'oklch(0.38 0.16 22)' }}>
-                        #{String(order.id).padStart(4, '0')}
-                      </TableCell>
-                      <TableCell className="font-body text-sm font-medium">{order.customerName}</TableCell>
-                      <TableCell className="font-body text-sm text-muted-foreground">{order.customerPhone}</TableCell>
-                      <TableCell className="font-body text-sm font-semibold">
-                        <span className="flex items-center gap-0.5">
-                          <span style={{ color: 'oklch(0.38 0.16 22)' }}>₹</span>
-                          {Number(order.totalPrice).toLocaleString('en-IN')}
-                        </span>
-                      </TableCell>
-                      <TableCell className="font-body text-sm text-muted-foreground">
-                        {formatDate(order.orderDate)}
-                      </TableCell>
-                      <TableCell>
-                        <StatusCell orderId={order.id} currentStatus={order.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {sorted.map((order) => {
+                    // Extract first product detail (primary item)
+                    const primaryProduct = order.productDetails?.[0];
+                    const productName = primaryProduct?.name ?? '—';
+                    const fabricLabel = primaryProduct
+                      ? (FABRIC_LABELS[primaryProduct.fabricType] ?? String(primaryProduct.fabricType))
+                      : '—';
+                    const productColor = primaryProduct?.color ?? '—';
+                    const qty = primaryProduct ? Number(primaryProduct.quantity) : order.items.reduce((s, i) => s + Number(i.quantity), 0);
+                    const unitPrice = primaryProduct ? Number(primaryProduct.unitPrice) : 0;
+
+                    return (
+                      <TableRow key={String(order.id)} className="admin-table-row">
+                        {/* Order ID */}
+                        <TableCell className="font-body text-sm font-semibold whitespace-nowrap" style={{ color: 'oklch(0.38 0.16 22)' }}>
+                          #{String(order.id).padStart(4, '0')}
+                        </TableCell>
+
+                        {/* Customer Name */}
+                        <TableCell className="font-body text-sm font-medium whitespace-nowrap">
+                          {order.customerName}
+                        </TableCell>
+
+                        {/* Phone */}
+                        <TableCell className="font-body text-sm text-muted-foreground whitespace-nowrap">
+                          {order.customerPhone}
+                        </TableCell>
+
+                        {/* Product Name */}
+                        <TableCell className="font-body text-sm whitespace-nowrap max-w-[140px]">
+                          <span className="truncate block" title={productName}>{productName}</span>
+                        </TableCell>
+
+                        {/* Fabric */}
+                        <TableCell className="font-body text-sm text-muted-foreground whitespace-nowrap">
+                          {fabricLabel}
+                        </TableCell>
+
+                        {/* Color */}
+                        <TableCell className="font-body text-sm whitespace-nowrap">
+                          <span className="flex items-center gap-1.5">
+                            <span
+                              className="w-3 h-3 rounded-full border border-border flex-shrink-0"
+                              style={{ background: productColor.toLowerCase() }}
+                            />
+                            <span className="capitalize text-muted-foreground">{productColor}</span>
+                          </span>
+                        </TableCell>
+
+                        {/* Quantity */}
+                        <TableCell className="font-body text-sm text-center font-medium">
+                          {qty}
+                        </TableCell>
+
+                        {/* Unit Price */}
+                        <TableCell className="font-body text-sm whitespace-nowrap">
+                          <span className="flex items-center gap-0.5">
+                            <IndianRupee size={12} style={{ color: 'oklch(0.55 0.14 65)' }} />
+                            <span>{unitPrice.toLocaleString('en-IN')}</span>
+                          </span>
+                        </TableCell>
+
+                        {/* Total Price */}
+                        <TableCell className="font-body text-sm font-semibold whitespace-nowrap">
+                          <span className="flex items-center gap-0.5">
+                            <IndianRupee size={12} style={{ color: 'oklch(0.38 0.16 22)' }} />
+                            <span style={{ color: 'oklch(0.38 0.16 22)' }}>
+                              {Number(order.totalPrice).toLocaleString('en-IN')}
+                            </span>
+                          </span>
+                        </TableCell>
+
+                        {/* Payment Status */}
+                        <TableCell className="whitespace-nowrap">
+                          <span
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-body font-semibold"
+                            style={
+                              order.paymentStatus === 'Paid'
+                                ? { background: 'oklch(0.52 0.14 140 / 0.15)', color: 'oklch(0.32 0.14 140)' }
+                                : { background: 'oklch(0.82 0.12 75 / 0.18)', color: 'oklch(0.55 0.16 65)' }
+                            }
+                          >
+                            {order.paymentStatus || 'Pending'}
+                          </span>
+                        </TableCell>
+
+                        {/* Date & Time */}
+                        <TableCell className="font-body text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDateTime(order.orderDate)}
+                        </TableCell>
+
+                        {/* Status Dropdown */}
+                        <TableCell>
+                          <StatusCell orderId={order.id} currentStatus={order.status} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

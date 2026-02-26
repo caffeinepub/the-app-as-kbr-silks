@@ -1,16 +1,23 @@
-import Array "mo:core/Array";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import Text "mo:core/Text";
 import Iter "mo:core/Iter";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Runtime "mo:core/Runtime";
+import Principal "mo:core/Principal";
+import Array "mo:core/Array";
 import Order "mo:core/Order";
+
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
+import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
   include MixinStorage();
+
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
 
   type FabricType = {
     #Kanjivaram;
@@ -58,10 +65,19 @@ actor {
     #Confirmed;
     #Shipped;
     #Delivered;
+    #Cancelled;
   };
 
   type OrderedItem = {
     sareeId : Nat;
+    quantity : Nat;
+  };
+
+  type ProductDetail = {
+    name : Text;
+    fabricType : FabricType;
+    color : Text;
+    unitPrice : Nat;
     quantity : Nat;
   };
 
@@ -73,6 +89,8 @@ actor {
     totalPrice : Nat;
     orderDate : Time.Time;
     status : OrderStatus;
+    paymentStatus : Text;
+    productDetails : [ProductDetail];
   };
 
   module OrderHelpers {
@@ -97,15 +115,64 @@ actor {
     };
   };
 
+  type UserProfile = {
+    name : Text;
+  };
+
+  public type SareeError = {
+    #AlreadyExists;
+    #NotFound;
+    #Unauthorized;
+    #StorageError : Text;
+    #ValidationError : Text;
+  };
+
   let sarees = Map.empty<Nat, Saree>();
   let orders = Map.empty<Nat, Order>();
   let customers = Map.empty<Text, Customer>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
 
   var nextSareeId = 1;
   var nextOrderId = 1;
 
-  // Saree Operations
-  public shared ({ caller }) func addSaree(name : Text, description : Text, fabricType : FabricType, color : Text, price : Nat, stock : Nat, image : Storage.ExternalBlob) : async Nat {
+  // User Profile Operations
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // Saree Operations - Admin only for mutations, public for reads
+  public shared ({ caller }) func addSaree(
+    name : Text,
+    description : Text,
+    fabricType : FabricType,
+    color : Text,
+    price : Nat,
+    stock : Nat,
+    image : Storage.ExternalBlob,
+  ) : async {
+    #StorageError : Text;
+  } {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      return #StorageError("Unauthorized: Only admins can add sarees");
+    };
+
     let id = nextSareeId;
     nextSareeId += 1;
 
@@ -121,12 +188,27 @@ actor {
     };
 
     sarees.add(id, saree);
-    id;
+    #StorageError("Saree added successfully");
   };
 
-  public shared ({ caller }) func updateSaree(id : Nat, name : Text, description : Text, fabricType : FabricType, color : Text, price : Nat, stock : Nat, image : Storage.ExternalBlob) : async () {
+  public shared ({ caller }) func updateSaree(
+    id : Nat,
+    name : Text,
+    description : Text,
+    fabricType : FabricType,
+    color : Text,
+    price : Nat,
+    stock : Nat,
+    image : Storage.ExternalBlob,
+  ) : async {
+    #StorageError : Text;
+  } {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      return #StorageError("Unauthorized: Only admins can update sarees");
+    };
+
     if (not sarees.containsKey(id)) {
-      Runtime.trap("Saree not found");
+      return #StorageError("Saree not found");
     };
 
     let saree : Saree = {
@@ -141,33 +223,52 @@ actor {
     };
 
     sarees.add(id, saree);
+    #StorageError("Saree updated successfully");
   };
 
   public shared ({ caller }) func deleteSaree(id : Nat) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can delete sarees");
+    };
+
     if (not sarees.containsKey(id)) {
       Runtime.trap("Saree not found");
     };
     sarees.remove(id);
   };
 
-  public query ({ caller }) func getSaree(id : Nat) : async Saree {
+  public query func getSaree(id : Nat) : async Saree {
     switch (sarees.get(id)) {
       case (null) { Runtime.trap("Saree not found") };
       case (?saree) { saree };
     };
   };
 
-  public query ({ caller }) func getAllSarees() : async [Saree] {
+  public query func getAllSarees() : async [Saree] {
     sarees.values().toArray().sort();
   };
 
-  public query ({ caller }) func getSareesByPrice() : async [Saree] {
+  public query func getSareesByPrice() : async [Saree] {
     sarees.values().toArray().sort(Saree.compareByPrice);
   };
 
-  // Order Operations
-  public shared ({ caller }) func placeOrder(customerName : Text, customerPhone : Text, items : [OrderedItem]) : async Nat {
-    let totalPrice = items.foldLeft(0, func(acc, item) { acc + getSareePrice(item.sareeId) * item.quantity });
+  // Order Operations - requires authenticated user (not guest)
+  public shared ({ caller }) func placeOrder(
+    customerName : Text,
+    customerPhone : Text,
+    items : [OrderedItem],
+    productDetails : [ProductDetail],
+  ) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only registered users can place orders");
+    };
+
+    let totalPrice = items.foldLeft(
+      0,
+      func(acc, item) {
+        acc + getSareePrice(item.sareeId) * item.quantity;
+      },
+    );
 
     let id = nextOrderId;
     nextOrderId += 1;
@@ -180,6 +281,8 @@ actor {
       totalPrice;
       orderDate = Time.now();
       status = #Pending;
+      paymentStatus = "Pending";
+      productDetails;
     };
 
     orders.add(id, order);
@@ -194,12 +297,33 @@ actor {
   };
 
   public shared ({ caller }) func updateOrderStatus(id : Nat, status : OrderStatus) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can update order status");
+    };
+
     switch (orders.get(id)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
         let updatedOrder = {
           order with
-          status
+          status;
+        };
+        orders.add(id, updatedOrder);
+      };
+    };
+  };
+
+  public shared ({ caller }) func updatePaymentStatus(id : Nat, paymentStatus : Text) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can update payment status");
+    };
+
+    switch (orders.get(id)) {
+      case (null) { Runtime.trap("Order not found") };
+      case (?order) {
+        let updatedOrder = {
+          order with
+          paymentStatus;
         };
         orders.add(id, updatedOrder);
       };
@@ -207,6 +331,10 @@ actor {
   };
 
   public query ({ caller }) func getOrder(id : Nat) : async Order {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can view order details");
+    };
+
     switch (orders.get(id)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) { order };
@@ -214,11 +342,18 @@ actor {
   };
 
   public query ({ caller }) func getAllOrders() : async [Order] {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can view all orders");
+    };
+
     orders.values().toArray().sort();
   };
 
-  // Customer Operations
   public shared ({ caller }) func addCustomer(name : Text, phone : Text, email : ?Text, address : Text) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can add customers");
+    };
+
     if (customers.containsKey(phone)) {
       Runtime.trap("Customer with this phone already exists");
     };
@@ -235,6 +370,10 @@ actor {
   };
 
   public shared ({ caller }) func updateCustomer(phone : Text, name : Text, email : ?Text, address : Text) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can update customers");
+    };
+
     switch (customers.get(phone)) {
       case (null) { Runtime.trap("Customer not found") };
       case (?customer) {
@@ -250,6 +389,10 @@ actor {
   };
 
   public query ({ caller }) func getCustomer(phone : Text) : async Customer {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can view customer details");
+    };
+
     switch (customers.get(phone)) {
       case (null) { Runtime.trap("Customer not found") };
       case (?customer) { customer };
@@ -257,6 +400,10 @@ actor {
   };
 
   public query ({ caller }) func getAllCustomers() : async [Customer] {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can view all customers");
+    };
+
     customers.values().toArray().sort();
   };
 };

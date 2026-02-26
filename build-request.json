@@ -1,38 +1,93 @@
 {
   "kind": "build_request",
-  "title": "Rename brand name to KBR Silks",
+  "title": "Fix admin panel saree upload: image compression, retry logic, and better error handling",
   "projectName": "KBR Silks",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-10",
-      "text": "Update the brand name displayed in the app header and all other locations from 'Silk Splendor' to 'KBR Silks'. This includes the top header in Layout.tsx, the HTML page title in index.html, and any other visible references to the old brand name throughout the UI.",
+      "id": "REQ-1",
+      "text": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "please name the app as KBR silks",
-          "Would you like me to update the brand name to KBR Silks in the app header?",
-          "Yes"
+          "Add image compression before upload"
         ]
       },
       "acceptanceCriteria": [
-        "The top header displays 'KBR Silks' instead of 'Silk Splendor'",
-        "The browser tab title reads 'KBR Silks'",
-        "No visible instance of 'Silk Splendor' remains anywhere in the UI"
+        "Images are compressed client-side before being included in the backend call",
+        "Compressed image size is visibly under 1.5MB before submission",
+        "The compression happens automatically without requiring user action"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Add a loading indicator and retry logic"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A progress bar or spinner is shown during saree submission",
+        "The submit button is disabled while the upload is in progress",
+        "User receives clear visual feedback that the operation is being processed"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Add better error messages so you know exactly what's failing",
+          "add retry logic"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Failed saree submissions are automatically retried up to 3 times",
+        "Retries use exponential backoff (e.g., 1s, 2s, 4s delays)",
+        "After all retries fail, a descriptive error message is shown (not just 'try again')",
+        "Error message distinguishes between image-too-large and general network failure where possible"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Optimize the backend saree storage in backend/main.mo to store image data as a Blob or chunked format if necessary, and ensure the addSaree and updateSaree methods handle large payloads gracefully by returning a descriptive error variant instead of trapping.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Optimize how saree data is stored in the backend"
+        ]
+      },
+      "acceptanceCriteria": [
+        "addSaree and updateSaree return a Result type with a descriptive error on failure instead of trapping",
+        "Backend does not trap or time out on valid saree submissions under 1.5MB",
+        "Error messages from the backend are surfaced to the frontend"
       ]
     }
   ],
   "constraints": [
-    "Do not change any visual theme, colors, or layout — only the brand name text",
-    "Do not modify immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui"
+    "Do not modify files listed in frontend.immutablePaths",
+    "All Motoko logic must remain in backend/main.mo",
+    "Do not change the existing Saree data type fields visible to the catalog or order system"
   ],
   "nonGoals": [
-    "Changing the visual theme or design",
-    "Adding or removing any features",
-    "Modifying backend logic"
+    "Adding new saree fields or changing the catalog display",
+    "Changing authentication or owner verification logic",
+    "Implementing multi-part chunked upload infrastructure"
   ],
   "imageRequirements": {
     "required": [],
