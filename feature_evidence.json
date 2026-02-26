@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-after-a-saree-is-successfully-added-or-updated-in-the-admin-panel-adminsarees-tsx-the-react-query-cache-for-the-saree-catalog-must-be-invalidated-so-the-user-facing-catalog-page-catalog-tsx-immediately-reflects-the-new-or-updated-saree-without-requiring-a-manual-page-refresh",
-      "featureTitle": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
+      "featureId": "feature-after-a-saree-is-added-or-updated-in-the-admin-panel-adminsarees-the-saree-list-in-the-admin-panel-must-immediately-reflect-the-change-without-requiring-a-manual-page-refresh-ensure-the-react-query-cache-for-the-sarees-query-is-properly-invalidated-and-refetched-after-every-addsaree-updatesaree-and-deletesaree-mutation-succeeds",
+      "featureTitle": "After a saree is added or updated in the admin panel (AdminSarees), the saree list in the admin panel must immediately reflect the change without requiring a manual page refresh. Ensure the React Query cache for the sarees query is properly invalidated and refetched after every addSaree, updateSaree, and deleteSaree mutation succeeds.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/Catalog.tsx"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -23,8 +22,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-audit-the-saree-list-query-in-usequeries-ts-to-ensure-it-fetches-fresh-data-from-the-backend-when-the-cache-is-invalidated-and-that-the-query-key-is-consistent-between-adminsarees-tsx-and-catalog-tsx-so-cache-invalidation-works-correctly-across-both-pages",
-      "featureTitle": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
+      "featureId": "feature-after-a-saree-is-added-or-updated-in-the-admin-panel-the-public-catalog-page-must-also-reflect-the-latest-saree-data-without-requiring-a-manual-page-refresh-ensure-the-sarees-query-cache-used-by-the-catalog-page-is-invalidated-and-refetched-whenever-any-saree-mutation-add-update-delete-completes-successfully",
+      "featureTitle": "After a saree is added or updated in the admin panel, the public Catalog page must also reflect the latest saree data without requiring a manual page refresh. Ensure the sarees query cache used by the Catalog page is invalidated and refetched whenever any saree mutation (add, update, delete) completes successfully.",
       "files": [
         "frontend/src/hooks/useQueries.ts"
       ],
@@ -43,10 +42,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-that-saree-images-uploaded-via-the-admin-panel-stored-as-blobs-in-the-backend-are-correctly-fetched-and-rendered-in-the-user-facing-catalog-page-after-a-cache-invalidation-so-newly-added-sarees-display-their-images-and-not-a-broken-empty-image-placeholder",
-      "featureTitle": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
+      "featureId": "feature-audit-the-usequeries-ts-mutation-hooks-for-sarees-addsaree-updatesaree-deletesaree-and-ensure-their-onsuccess-callbacks-call-queryclient-invalidatequeries-with-the-correct-sarees-query-key-if-the-query-key-differs-between-admin-and-catalog-views-unify-it-or-invalidate-all-relevant-keys-also-verify-the-queryclient-is-not-configured-with-an-excessively-long-staletime-or-cachetime-that-would-prevent-refetching",
+      "featureTitle": "Audit the useQueries.ts mutation hooks for sarees (addSaree, updateSaree, deleteSaree) and ensure their onSuccess callbacks call queryClient.invalidateQueries with the correct sarees query key. If the query key differs between admin and catalog views, unify it or invalidate all relevant keys. Also verify the QueryClient is not configured with an excessively long staleTime or cacheTime that would prevent refetching.",
       "files": [
-        "frontend/src/pages/Catalog.tsx"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "blob-storage@4.0.0",

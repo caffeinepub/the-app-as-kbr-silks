@@ -1,73 +1,79 @@
 {
   "kind": "build_request",
-  "title": "Fix saree catalog sync: admin uploads not reflecting in user panel",
+  "title": "Fix saree list not updating after add/edit in both admin and user panels",
   "projectName": "KBR Silks",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
+      "text": "After a saree is added or updated in the admin panel (AdminSarees), the saree list in the admin panel must immediately reflect the change without requiring a manual page refresh. Ensure the React Query cache for the sarees query is properly invalidated and refetched after every addSaree, updateSaree, and deleteSaree mutation succeeds.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-recent-1",
+          "msg-recent-2"
         ],
         "quotes": [
-          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
+          "I am getting frustrated that after adding the sarees it is not at all updating",
+          "Yes and it is occurring in admin panel too"
         ]
       },
       "acceptanceCriteria": [
-        "After submitting a new saree in the admin panel, the saree appears in the user-facing catalog without a page reload.",
-        "After editing an existing saree in the admin panel, the updated details (including image) are reflected in the catalog without a page reload.",
-        "The React Query query key used to fetch sarees in Catalog.tsx is invalidated upon successful add/update mutations in AdminSarees.tsx.",
-        "No stale saree data is shown in the catalog after an admin operation completes."
+        "When a saree is added via the admin panel form and saved, the saree list in AdminSarees updates immediately to show the new saree without a page reload.",
+        "When a saree is edited and saved, the updated saree details appear immediately in the AdminSarees list.",
+        "When a saree is deleted, it disappears from the AdminSarees list immediately.",
+        "The React Query invalidation for the sarees query key fires on mutation success in all three cases (add, update, delete)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
+      "text": "After a saree is added or updated in the admin panel, the public Catalog page must also reflect the latest saree data without requiring a manual page refresh. Ensure the sarees query cache used by the Catalog page is invalidated and refetched whenever any saree mutation (add, update, delete) completes successfully.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-recent-1"
         ],
         "quotes": [
-          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
+          "I am getting frustrated that after adding the sarees it is not at all updating"
         ]
       },
       "acceptanceCriteria": [
-        "The saree list query key in useQueries.ts is a single shared constant referenced by both the admin and catalog pages.",
-        "Invalidating the saree list query key triggers a re-fetch in the Catalog page.",
-        "The useSarees (or equivalent) query does not use staleTime or cacheTime settings that would prevent re-fetching after invalidation."
+        "After adding a saree in the admin panel, navigating to the Catalog shows the new saree.",
+        "After updating a saree in the admin panel, the Catalog reflects the updated details.",
+        "After deleting a saree in the admin panel, the Catalog no longer shows the deleted saree.",
+        "The same React Query key is used for the sarees list across AdminSarees and Catalog so invalidation propagates to both."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
+      "text": "Audit the useQueries.ts mutation hooks for sarees (addSaree, updateSaree, deleteSaree) and ensure their onSuccess callbacks call queryClient.invalidateQueries with the correct sarees query key. If the query key differs between admin and catalog views, unify it or invalidate all relevant keys. Also verify the QueryClient is not configured with an excessively long staleTime or cacheTime that would prevent refetching.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-recent-1",
+          "msg-recent-2"
         ],
         "quotes": [
-          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
+          "I am getting frustrated that after adding the sarees it is not at all updating",
+          "Yes and it is occurring in admin panel too"
         ]
       },
       "acceptanceCriteria": [
-        "Newly added sarees display their uploaded image correctly in the catalog.",
-        "The image blob data returned from the backend is properly converted to a displayable URL (e.g., via a Blob URL or base64) in the Catalog page.",
-        "No broken image icons appear for freshly added sarees."
+        "All three saree mutation hooks (addSaree, updateSaree, deleteSaree) invalidate the sarees query cache on success.",
+        "The sarees query key used in AdminSarees and Catalog is consistent or both are invalidated.",
+        "The QueryClient staleTime for the sarees query is set to a value that allows fresh fetches after mutations (0 or a short interval).",
+        "No stale cached data is served to either panel after a mutation."
       ]
     }
   ],
   "constraints": [
-    "Do not change the backend data model or CRUD API.",
-    "Do not modify any files listed in frontend.immutablePaths."
+    "Do not change the backend Motoko data model or CRUD API — the issue is in the frontend cache layer.",
+    "Do not edit files under frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts, frontend/src/main.tsx, or frontend/src/components/ui."
   ],
   "nonGoals": [
-    "Real-time / WebSocket-based live updates between admin and user sessions.",
-    "Changes to the admin UI layout or saree form fields.",
-    "Any backend schema migration."
+    "Adding real-time/WebSocket-based updates.",
+    "Changes to the backend actor or data persistence logic.",
+    "Redesigning the admin or catalog UI layout."
   ],
   "imageRequirements": {
     "required": [],

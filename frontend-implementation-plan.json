@@ -1,69 +1,61 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix saree catalog sync: admin uploads not reflecting in user panel",
+  "title": "Fix saree list not updating after add/edit in both admin and user panels",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Invalidate React Query cache after admin saree operations to immediately reflect changes in user catalog",
+      "summary": "Ensure AdminSarees page immediately reflects changes after add/update/delete operations without manual refresh",
       "acceptanceCriteria": [
-        "After submitting a new saree in the admin panel, the saree appears in the user-facing catalog without a page reload.",
-        "After editing an existing saree in the admin panel, the updated details (including image) are reflected in the catalog without a page reload.",
-        "The React Query query key used to fetch sarees in Catalog.tsx is invalidated upon successful add/update mutations in AdminSarees.tsx.",
-        "No stale saree data is shown in the catalog after an admin operation completes."
+        "When a saree is added via the admin panel form and saved, the saree list in AdminSarees updates immediately to show the new saree without a page reload.",
+        "When a saree is edited and saved, the updated saree details appear immediately in the AdminSarees list.",
+        "When a saree is deleted, it disappears from the AdminSarees list immediately.",
+        "The React Query invalidation for the sarees query key fires on mutation success in all three cases (add, update, delete)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Review and ensure the saree mutation hooks (useAddSaree, useUpdateSaree, useDeleteSaree) are properly invalidating the React Query cache using queryClient.invalidateQueries with the shared 'sarees' query key upon successful mutation completion. Verify that the saree list query key is consistent and that the invalidation triggers re-fetch in both AdminSarees and Catalog pages."
-        },
-        {
-          "path": "frontend/src/pages/AdminSarees.tsx",
-          "operation": "modify",
-          "description": "Verify that after successful saree add, update, or delete operations, the component properly awaits the mutation and ensures cache invalidation completes. Add user feedback (toast/notification) confirming the operation succeeded and the catalog has been refreshed. Ensure the form reset and modal close happen only after cache invalidation, so the user sees the updated catalog state immediately."
-        },
-        {
-          "path": "frontend/src/pages/Catalog.tsx",
-          "operation": "modify",
-          "description": "Audit the saree list query usage to confirm it uses the same query key as the admin mutations, and that no staleTime or cacheTime settings are preventing re-fetch after invalidation. Ensure the component properly shows loading state during re-fetch and displays fresh data once the invalidated query resolves."
+          "description": "Add queryClient.invalidateQueries({ queryKey: ['sarees'] }) in the onSuccess callback of useAddSaree, useUpdateSaree, and useDeleteSaree mutations to ensure the sarees list cache is invalidated and refetched immediately after each mutation completes successfully."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Audit saree list query to ensure consistent query key and proper re-fetch behavior after cache invalidation",
+      "summary": "Ensure public Catalog page reflects latest saree data after admin panel mutations without manual refresh",
       "acceptanceCriteria": [
-        "The saree list query key in useQueries.ts is a single shared constant referenced by both the admin and catalog pages.",
-        "Invalidating the saree list query key triggers a re-fetch in the Catalog page.",
-        "The useSarees (or equivalent) query does not use staleTime or cacheTime settings that would prevent re-fetching after invalidation."
+        "After adding a saree in the admin panel, navigating to the Catalog shows the new saree.",
+        "After updating a saree in the admin panel, the Catalog reflects the updated details.",
+        "After deleting a saree in the admin panel, the Catalog no longer shows the deleted saree.",
+        "The same React Query key is used for the sarees list across AdminSarees and Catalog so invalidation propagates to both."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Extract the 'sarees' query key into a shared constant (e.g., QUERY_KEYS.SAREES) at the top of the file. Ensure all saree-related queries and mutations reference this constant. Review the useSarees query configuration to remove or adjust any staleTime/cacheTime settings that could prevent immediate re-fetch after invalidation. Confirm that the queryFn properly calls actor.getAllSarees() and that the query is enabled when the actor is available."
+          "description": "Verify that both useGetAllSarees (used by Catalog) and the saree mutations use the consistent query key ['sarees'] so that invalidation in REQ-1 automatically propagates to the Catalog page. If a different key is currently in use, unify it to ['sarees'] across all saree-related queries and mutations."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Ensure saree images uploaded via admin are correctly fetched and rendered in catalog after cache invalidation",
+      "summary": "Audit and fix React Query configuration to ensure proper cache invalidation and refetching for sarees",
       "acceptanceCriteria": [
-        "Newly added sarees display their uploaded image correctly in the catalog.",
-        "The image blob data returned from the backend is properly converted to a displayable URL (e.g., via a Blob URL or base64) in the Catalog page.",
-        "No broken image icons appear for freshly added sarees."
+        "All three saree mutation hooks (addSaree, updateSaree, deleteSaree) invalidate the sarees query cache on success.",
+        "The sarees query key used in AdminSarees and Catalog is consistent or both are invalidated.",
+        "The QueryClient staleTime for the sarees query is set to a value that allows fresh fetches after mutations (0 or a short interval).",
+        "No stale cached data is served to either panel after a mutation."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/Catalog.tsx",
+          "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Review the image rendering logic for saree cards. Verify that when a saree.image (ExternalBlob) is present, the component calls getDirectURL() to obtain a displayable URL. Use the blob-storage component's ExternalBlob.getDirectURL() method to generate a browser-cached HTTP URL for each saree image. Ensure fallback to the placeholder image (frontend/public/assets/generated/saree-placeholder.dim_400x500.png) only when saree.image is null or undefined. Add error handling for image load failures to prevent broken image icons."
+          "description": "Review the QueryClient configuration and ensure staleTime for sarees queries is set to 0 or a short interval (e.g., 1000ms) to prevent serving stale cached data after mutations. Verify that refetchOnMount and refetchOnWindowFocus are enabled for sarees queries to ensure fresh data is fetched when navigating between admin and catalog pages."
         },
         {
-          "path": "frontend/src/pages/AdminSarees.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Verify that uploaded images are converted to ExternalBlob using ExternalBlob.fromBytes() before being passed to the addSaree or updateSaree mutations. Ensure the image compression utility (frontend/src/utils/imageCompression.ts) is applied before creating the ExternalBlob. Confirm that the image preview in the admin form also uses getDirectURL() for consistency with the catalog rendering. Verify the component's usage instructions from the blob-storage component before implementing any changes."
+          "description": "Confirm all saree mutation hooks include proper error handling and that onSuccess callbacks are executed. Add explicit queryClient.invalidateQueries calls for the ['sarees'] key in useAddSaree, useUpdateSaree, and useDeleteSaree if not already present. Ensure no conditional logic prevents invalidation from executing."
         }
       ]
     }

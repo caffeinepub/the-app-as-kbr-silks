@@ -24,8 +24,11 @@ export function useGetAllSarees() {
       return result;
     },
     enabled: !!actor && !isFetching,
+    // staleTime: 0 ensures data is always considered stale and will refetch on mount/focus
     staleTime: 0,
-    gcTime: 0,
+    // Do NOT set gcTime: 0 — that causes the cache entry to be immediately garbage collected,
+    // which breaks invalidateQueries/refetchQueries in mutation onSuccess callbacks.
+    // Use the default gcTime (5 minutes) so the cache entry persists for refetching.
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
@@ -42,7 +45,6 @@ export function useGetSareesByPrice() {
     },
     enabled: !!actor && !isFetching,
     staleTime: 0,
-    gcTime: 0,
   });
 }
 
@@ -74,8 +76,9 @@ export function useAddSaree() {
       );
     },
     onSuccess: async () => {
+      // Invalidate marks the cache as stale, then refetchQueries actively re-runs the query
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
     },
   });
 }
@@ -111,7 +114,7 @@ export function useUpdateSaree() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
     },
   });
 }
@@ -127,7 +130,7 @@ export function useDeleteSaree() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
     },
   });
 }

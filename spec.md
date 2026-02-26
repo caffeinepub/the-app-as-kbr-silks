@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the saree catalog sync issue so that sarees added or updated in the admin panel immediately appear in the user-facing catalog without a page refresh.
+**Goal:** Fix the saree list not updating in real-time after add, edit, or delete operations in both the admin panel and the public catalog.
 
 **Planned changes:**
-- Introduce a shared React Query key constant for the saree list query, referenced by both `AdminSarees.tsx` and `Catalog.tsx`.
-- Invalidate the saree list query cache upon successful add/update mutations in the admin panel so the catalog re-fetches automatically.
-- Audit `useQueries.ts` to remove any `staleTime`/`cacheTime` settings that would prevent re-fetching after invalidation.
-- Ensure newly added saree images (stored as blobs) are correctly converted to displayable URLs in the catalog page so no broken image icons appear.
+- Audit and fix the `addSaree`, `updateSaree`, and `deleteSaree` mutation hooks in `useQueries.ts` to call `queryClient.invalidateQueries` with the correct sarees query key on success.
+- Unify the sarees query key used across `AdminSarees` and the `Catalog` page, or ensure all relevant keys are invalidated after any mutation.
+- Verify the `QueryClient` is not configured with an excessively long `staleTime` or `cacheTime` that prevents refetching after mutations.
 
-**User-visible outcome:** After an admin adds or edits a saree, it immediately appears with its correct image in the user-facing catalog without requiring a manual page refresh.
+**User-visible outcome:** After adding, editing, or deleting a saree in the admin panel, both the admin saree list and the public catalog immediately reflect the changes without requiring a manual page refresh.
