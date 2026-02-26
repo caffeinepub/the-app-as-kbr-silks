@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the admin authorization mismatch so that users authenticated via the OwnerVerificationGate (password '9966' or authorized phone number) can successfully add sarees without receiving an "Unauthorized: Only admins can add sarees" error.
+**Goal:** Fix the non-functional "Add Saree" button in the AdminSarees page so it correctly opens the add saree modal form.
 
 **Planned changes:**
-- Update the backend `addSaree` function authorization logic to correctly recognize callers authenticated through the frontend's password/phone-based admin gate, not just Internet Identity principals.
-- Update the frontend `AdminSarees` page to ensure the `addSaree` mutation passes the correct auth context or credentials that the backend expects from gate-verified admins.
-- Ensure non-admin users are still blocked from adding sarees.
+- Fix the "Add Saree" button in AdminSarees so it becomes enabled and responsive once the actor is initialized
+- Ensure clicking the button opens the saree creation modal form
+- Ensure submitting the modal form successfully calls the addSaree mutation
 
-**User-visible outcome:** An admin who has logged in through the OwnerVerificationGate can fill out and submit the "Add New Saree" form successfully — no "Unauthorized" error banner appears, and the new saree is saved and shown in the admin saree list.
+**User-visible outcome:** Admin users can click the "Add Saree" button to open the modal form and successfully add new sarees to the catalog.

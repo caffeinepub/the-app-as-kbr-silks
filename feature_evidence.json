@@ -1,4 +1,25 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-fix-the-add-saree-button-in-the-adminsarees-page-so-that-clicking-it-opens-the-add-saree-modal-form-the-button-must-be-enabled-and-functional-once-the-actor-is-initialized-not-null-and-must-not-remain-permanently-disabled-or-unresponsive-after-the-admin-panel-loads",
+      "featureTitle": "Fix the 'Add Saree' button in the AdminSarees page so that clicking it opens the add saree modal form. The button must be enabled and functional once the actor is initialized (not null), and must not remain permanently disabled or unresponsive after the admin panel loads.",
+      "files": [
+        "frontend/src/pages/AdminSarees.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

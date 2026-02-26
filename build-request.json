@@ -1,55 +1,35 @@
 {
   "kind": "build_request",
-  "title": "Fix admin authorization check for adding sarees",
+  "title": "Fix 'Add Saree' button not working in AdminSarees",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the backend authorization check in the addSaree function so that users authenticated via the secondary admin password ('9966') or authorized phone numbers are correctly recognized as admins and allowed to add sarees. Currently the backend rejects their calls with 'Unauthorized: Only admins can add sarees' even though they have successfully passed the OwnerVerificationGate.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Unauthorized: Only admins can add sarees",
-          "I am one of the admin but not able to add any sarees"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A user who has authenticated through the OwnerVerificationGate (via authorized phone number or password '9966') can successfully submit the Add New Saree form without receiving an 'Unauthorized' error.",
-        "The addSaree backend function accepts calls from all callers when the frontend admin session is active, OR the authorization logic is aligned with the session-based auth used by the frontend gate.",
-        "Other non-admin users still cannot add sarees."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Fix the frontend AdminSarees page to ensure the addSaree mutation passes the correct caller identity or auth context that the backend expects. If the backend uses caller-based principal checks, the frontend must either pass the appropriate credentials or the backend must be updated to not require Internet Identity principal when the admin is verified via the password/phone gate.",
+      "text": "Fix the 'Add Saree' button in the AdminSarees page so that clicking it opens the add saree modal form. The button must be enabled and functional once the actor is initialized (not null), and must not remain permanently disabled or unresponsive after the admin panel loads.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Unauthorized: Only admins can add sarees"
+          "Add sarees button is not working"
         ]
       },
       "acceptanceCriteria": [
-        "The Add New Saree form submits successfully for an admin authenticated via the OwnerVerificationGate.",
-        "No 'Unauthorized' error banner appears when a valid admin submits the form.",
-        "The saree is saved and appears in the admin saree list after submission."
+        "Clicking the 'Add Saree' button opens the saree creation modal form.",
+        "The button is not disabled after the actor has finished initializing.",
+        "The button does not enter a permanently disabled state due to async initialization logic.",
+        "Submitting the form via the modal successfully calls the addSaree mutation and adds a new saree."
       ]
     }
   ],
   "constraints": [
-    "Do not remove or weaken security for non-admin users — only fix the mismatch between the frontend admin session and backend authorization.",
-    "Do not change the OwnerVerificationGate login flow or useOwnerAuth logic beyond what is needed to fix the authorization issue.",
-    "frontend/src/hooks/useOwnerAuth.ts and frontend/src/hooks/useActor.ts are read-only; fix must work around or extend them via other files."
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui."
   ],
   "nonGoals": [
-    "Redesigning the admin authentication system.",
-    "Adding new admin roles or permission levels.",
-    "Changing the public catalog or order placement flows."
+    "Changes to the saree catalog page or any public-facing pages.",
+    "Changes to order or customer management admin pages.",
+    "Backend schema or data model changes."
   ],
   "imageRequirements": {
     "required": [],

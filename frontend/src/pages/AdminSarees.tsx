@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useGetAllSarees, useAddSaree, useUpdateSaree, useDeleteSaree } from '../hooks/useQueries';
+import { useActor } from '../hooks/useActor';
 import { FabricType, type Saree } from '../backend';
 import { ExternalBlob } from '../backend';
 import { compressImage } from '../utils/imageCompression';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Pencil, Trash2, ImageIcon, RefreshCw, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const MAX_BLOB_SIZE = 1_400_000; // 1.4MB IC limit
@@ -35,6 +36,7 @@ const defaultForm: SareeFormData = {
 };
 
 export default function AdminSarees() {
+  const { actor, isFetching: actorFetching } = useActor();
   const { data: sarees = [], isLoading, refetch, isFetching } = useGetAllSarees();
   const addSaree = useAddSaree();
   const updateSaree = useUpdateSaree();
@@ -48,8 +50,11 @@ export default function AdminSarees() {
   const [keepExistingImage, setKeepExistingImage] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<bigint | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Actor is ready when it exists — isFetching alone should not block operations
+  const isActorReady = !!actor;
   const isSubmitting = addSaree.isPending || updateSaree.isPending;
 
   function openAddModal() {
@@ -104,6 +109,12 @@ export default function AdminSarees() {
     e.preventDefault();
     setFormError(null);
 
+    // Guard: actor must be available before submitting
+    if (!isActorReady) {
+      setFormError('Admin session is not ready. Please wait a moment and try again.');
+      return;
+    }
+
     // Validate required fields
     if (!form.name.trim()) { setFormError('Name is required'); return; }
     if (!form.color.trim()) { setFormError('Color is required'); return; }
@@ -120,7 +131,6 @@ export default function AdminSarees() {
     if (imageFile) {
       try {
         const rawBytes = await compressImage(imageFile);
-        // Cast to the exact type expected by ExternalBlob.fromBytes()
         const compressed = rawBytes.buffer instanceof ArrayBuffer
           ? new Uint8Array(rawBytes.buffer as ArrayBuffer, rawBytes.byteOffset, rawBytes.byteLength) as Uint8Array<ArrayBuffer>
           : new Uint8Array(rawBytes) as Uint8Array<ArrayBuffer>;
@@ -163,24 +173,37 @@ export default function AdminSarees() {
         });
       }
 
-      // Close modal first, then trigger a fresh refetch to ensure list updates
       closeModal();
-      // Small delay to let the backend settle, then force a fresh fetch
       setTimeout(() => {
         refetch();
       }, 800);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Operation failed';
-      setFormError(msg);
+      if (msg.toLowerCase().includes('unauthorized')) {
+        setFormError('Admin session expired. Please close this dialog, log out, and log back in.');
+      } else {
+        setFormError(msg);
+      }
     }
   }
 
   async function handleDelete(id: bigint) {
+    if (!isActorReady) {
+      setDeleteError('Admin session is not ready. Please wait a moment and try again.');
+      return;
+    }
+    setDeleteError(null);
     try {
       await deleteSaree.mutateAsync(id);
       setDeleteConfirmId(null);
+      setDeleteError(null);
     } catch (err: unknown) {
-      console.error('Delete failed:', err);
+      const msg = err instanceof Error ? err.message : 'Delete failed';
+      if (msg.toLowerCase().includes('unauthorized')) {
+        setDeleteError('Admin session expired. Please log out and log back in to continue.');
+      } else {
+        setDeleteError(msg);
+      }
     }
   }
 
@@ -196,7 +219,14 @@ export default function AdminSarees() {
           <h1 className="text-2xl font-bold text-maroon">Saree Inventory</h1>
           <p className="text-sm text-muted-foreground mt-1">{sarees.length} sarees in catalog</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {/* Actor initializing indicator — only show when actor is not yet available */}
+          {actorFetching && !actor && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-3 py-1.5 rounded-full bg-muted">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>Initializing session…</span>
+            </div>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -207,7 +237,11 @@ export default function AdminSarees() {
             <RefreshCw className={`h-4 w-4 mr-1 ${isFetching ? 'animate-spin' : ''}`} />
             {isFetching ? 'Refreshing…' : 'Refresh'}
           </Button>
-          <Button onClick={openAddModal} className="btn-maroon">
+          {/* Add Saree button — always enabled so the modal can open; actor readiness is checked on submit */}
+          <Button
+            onClick={openAddModal}
+            className="btn-maroon"
+          >
             <Plus className="h-4 w-4 mr-1" />
             Add Saree
           </Button>
@@ -266,7 +300,10 @@ export default function AdminSarees() {
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                   <button
-                    onClick={() => setDeleteConfirmId(saree.id)}
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteConfirmId(saree.id);
+                    }}
                     className="bg-white/90 hover:bg-red-50 text-red-600 rounded-full p-1.5 shadow-sm transition-colors"
                     title="Delete"
                   >
@@ -302,6 +339,16 @@ export default function AdminSarees() {
               {editingSaree ? 'Edit Saree' : 'Add New Saree'}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Only show warning when actor is genuinely not available (null) */}
+          {!actor && actorFetching && (
+            <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20">
+              <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+              <AlertDescription className="text-amber-700 dark:text-amber-400">
+                Admin session is initializing. Please wait before saving…
+              </AlertDescription>
+            </Alert>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {formError && (
@@ -407,21 +454,23 @@ export default function AdminSarees() {
                       setKeepExistingImage(false);
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
+                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 transition-colors"
                   >
-                    ✕
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
               )}
               <div
-                className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-maroon/50 transition-colors"
+                className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-maroon/40 hover:bg-maroon/5 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <ImageIcon className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
-                  {imageFile ? imageFile.name : 'Click to upload image'}
+                  {imagePreview ? 'Click to change image' : 'Click to upload image'}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG, WebP · Auto-compressed to fit IC limit</p>
+                <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG, WebP (max ~1.4MB after compression)</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -436,10 +485,14 @@ export default function AdminSarees() {
               <Button type="button" variant="outline" onClick={closeModal} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button type="submit" className="btn-maroon" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="btn-maroon"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                     {editingSaree ? 'Saving…' : 'Adding…'}
                   </>
                 ) : (
@@ -451,17 +504,27 @@ export default function AdminSarees() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null); }}>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => { if (!open) { setDeleteConfirmId(null); setDeleteError(null); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-destructive">Delete Saree?</DialogTitle>
+            <DialogTitle className="text-destructive">Delete Saree</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone. The saree will be permanently removed from the catalog.
+            Are you sure you want to delete this saree? This action cannot be undone.
           </p>
+          {deleteError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{deleteError}</AlertDescription>
+            </Alert>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} disabled={deleteSaree.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => { setDeleteConfirmId(null); setDeleteError(null); }}
+              disabled={deleteSaree.isPending}
+            >
               Cancel
             </Button>
             <Button
@@ -470,8 +533,13 @@ export default function AdminSarees() {
               disabled={deleteSaree.isPending}
             >
               {deleteSaree.isPending ? (
-                <><RefreshCw className="h-4 w-4 mr-1 animate-spin" />Deleting…</>
-              ) : 'Delete'}
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                'Delete'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

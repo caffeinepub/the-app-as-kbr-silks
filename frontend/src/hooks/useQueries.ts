@@ -36,7 +36,9 @@ export function useAddSaree() {
       stock: bigint;
       image: ExternalBlob | null;
     }) => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) {
+        throw new Error('Admin session is not ready. Please wait a moment and try again.');
+      }
       const result = await actor.addSaree(
         params.name,
         params.description,
@@ -76,7 +78,9 @@ export function useUpdateSaree() {
       stock: bigint;
       image: ExternalBlob | null;
     }) => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) {
+        throw new Error('Admin session is not ready. Please wait a moment and try again.');
+      }
       const result = await actor.updateSaree(
         params.id,
         params.name,
@@ -108,7 +112,9 @@ export function useDeleteSaree() {
 
   return useMutation({
     mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) {
+        throw new Error('Admin session is not ready. Please wait a moment and try again.');
+      }
       const result = await actor.deleteSaree(id);
       if (result.__kind__ === 'Err') {
         throw new Error(result.Err);
