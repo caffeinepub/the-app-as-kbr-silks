@@ -8,7 +8,7 @@
   :root {
     --radius: 0.375rem;
 
-    /* Silk Splendor Brand Palette - Light Mode */
+    /* KBR Silks Premium Brand Palette - Light Mode */
     --background: 0.97 0.008 85;
     --foreground: 0.18 0.04 30;
 
@@ -18,11 +18,11 @@
     --popover: 0.99 0.004 80;
     --popover-foreground: 0.18 0.04 30;
 
-    /* Deep Crimson Primary */
-    --primary: 0.38 0.16 22;
+    /* Deep Royal Maroon Primary */
+    --primary: 0.32 0.16 18;
     --primary-foreground: 0.97 0.008 85;
 
-    /* Gold Secondary */
+    /* Antique Gold Secondary */
     --secondary: 0.82 0.12 75;
     --secondary-foreground: 0.18 0.04 30;
 
@@ -30,7 +30,7 @@
     --muted-foreground: 0.52 0.04 40;
 
     /* Gold Accent */
-    --accent: 0.78 0.14 72;
+    --accent: 0.75 0.15 68;
     --accent-foreground: 0.18 0.04 30;
 
     --destructive: 0.55 0.22 25;
@@ -38,7 +38,7 @@
 
     --border: 0.88 0.025 70;
     --input: 0.88 0.025 70;
-    --ring: 0.38 0.16 22;
+    --ring: 0.32 0.16 18;
 
     --chart-1: 0.646 0.222 41.116;
     --chart-2: 0.6 0.118 184.704;
@@ -48,62 +48,69 @@
 
     --sidebar: 0.22 0.06 22;
     --sidebar-foreground: 0.92 0.02 75;
-    --sidebar-primary: 0.78 0.14 72;
+    --sidebar-primary: 0.75 0.15 68;
     --sidebar-primary-foreground: 0.18 0.04 30;
     --sidebar-accent: 0.32 0.08 22;
     --sidebar-accent-foreground: 0.92 0.02 75;
     --sidebar-border: 0.32 0.08 22;
-    --sidebar-ring: 0.78 0.14 72;
+    --sidebar-ring: 0.75 0.15 68;
 
     /* Custom brand tokens */
-    --crimson: 0.38 0.16 22;
-    --crimson-light: 0.52 0.18 22;
-    --crimson-dark: 0.26 0.12 22;
-    --gold: 0.78 0.14 72;
-    --gold-light: 0.88 0.12 78;
-    --gold-dark: 0.62 0.16 65;
+    --maroon: 0.32 0.16 18;
+    --maroon-light: 0.42 0.18 18;
+    --maroon-dark: 0.22 0.12 18;
+    --maroon-deep: 0.18 0.10 18;
+    --gold: 0.75 0.15 68;
+    --gold-light: 0.86 0.12 76;
+    --gold-dark: 0.60 0.16 62;
+    --gold-bright: 0.88 0.14 80;
     --ivory: 0.97 0.008 85;
+    --ivory-warm: 0.95 0.015 80;
     --ivory-dark: 0.93 0.012 75;
+    /* Legacy aliases */
+    --crimson: 0.32 0.16 18;
+    --crimson-light: 0.42 0.18 18;
+    --crimson-dark: 0.22 0.12 18;
     --teal: 0.52 0.12 195;
   }
 
   .dark {
-    --background: 0.14 0.04 22;
+    --background: 0.12 0.04 20;
     --foreground: 0.95 0.01 80;
 
-    --card: 0.18 0.05 22;
+    --card: 0.16 0.05 20;
     --card-foreground: 0.95 0.01 80;
 
-    --popover: 0.20 0.05 22;
+    --popover: 0.18 0.05 20;
     --popover-foreground: 0.95 0.01 80;
 
-    --primary: 0.78 0.14 72;
-    --primary-foreground: 0.14 0.04 22;
+    --primary: 0.75 0.15 68;
+    --primary-foreground: 0.12 0.04 20;
 
-    --secondary: 0.26 0.07 22;
+    --secondary: 0.24 0.07 20;
     --secondary-foreground: 0.95 0.01 80;
 
-    --muted: 0.24 0.06 22;
+    --muted: 0.22 0.06 20;
     --muted-foreground: 0.65 0.04 60;
 
-    --accent: 0.32 0.08 22;
+    --accent: 0.30 0.08 20;
     --accent-foreground: 0.95 0.01 80;
 
     --destructive: 0.60 0.22 25;
     --destructive-foreground: 0.95 0.01 80;
 
-    --border: 0.28 0.06 22;
-    --input: 0.28 0.06 22;
-    --ring: 0.78 0.14 72;
+    --border: 0.26 0.06 20;
+    --input: 0.26 0.06 20;
+    --ring: 0.75 0.15 68;
 
-    --sidebar: 0.12 0.04 22;
+    --sidebar: 0.10 0.04 20;
     --sidebar-foreground: 0.92 0.02 75;
-    --sidebar-primary: 0.78 0.14 72;
-    --sidebar-primary-foreground: 0.14 0.04 22;
-    --sidebar-accent: 0.22 0.06 22;
+    --sidebar-primary: 0.75 0.15 68;
+    --sidebar-primary-foreground: 0.12 0.04 20;
+    --sidebar-accent: 0.20 0.06 20;
     --sidebar-accent-foreground: 0.92 0.02 75;
-    --sidebar-border: 0.22 0.06 22;
-    --sidebar-ring: 0.78 0.14 72;
+    --sidebar-border: 0.20 0.06 20;
+    --sidebar-ring: 0.75 0.15 68;
   }
 
   * {
@@ -121,6 +128,7 @@
 }
 
 @layer components {
+  /* ── Silk Divider ── */
   .silk-divider {
     position: relative;
     display: flex;
@@ -139,45 +147,73 @@
     font-size: 0.875rem;
   }
 
+  /* ── Saree Card ── */
   .saree-card {
     background-color: oklch(var(--card));
     border-radius: 0.125rem;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px oklch(var(--crimson) / 0.08);
+    box-shadow: 0 2px 8px oklch(var(--maroon) / 0.08);
   }
   .saree-card:hover {
-    box-shadow: 0 8px 24px oklch(var(--crimson) / 0.18);
+    box-shadow: 0 8px 24px oklch(var(--maroon) / 0.18);
     transform: translateY(-2px);
   }
 
+  /* ── Luxury Card ── */
+  .card-luxury {
+    background-color: oklch(var(--ivory-warm));
+    border: 1px solid oklch(var(--gold) / 0.35);
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 20px oklch(var(--maroon) / 0.08);
+    transition: all 0.3s ease;
+  }
+  .card-luxury:hover {
+    box-shadow: 0 8px 32px oklch(var(--maroon) / 0.14);
+    border-color: oklch(var(--gold) / 0.6);
+    transform: translateY(-2px);
+  }
+
+  /* ── Gold Button ── */
   .btn-gold {
     background: linear-gradient(135deg, oklch(var(--gold-dark)), oklch(var(--gold)), oklch(var(--gold-dark)));
-    color: oklch(var(--foreground));
+    color: oklch(var(--maroon-dark));
+    font-family: 'Playfair Display', serif;
     font-weight: 600;
-    padding: 0.5rem 1.5rem;
+    padding: 0.625rem 1.75rem;
     border-radius: 0.125rem;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
+    letter-spacing: 0.04em;
+    border: 1px solid oklch(var(--gold-dark) / 0.5);
   }
   .btn-gold:hover {
-    background: linear-gradient(135deg, oklch(var(--gold)), oklch(var(--gold-light)), oklch(var(--gold)));
-    box-shadow: 0 4px 12px oklch(var(--gold) / 0.4);
+    background: linear-gradient(135deg, oklch(var(--gold)), oklch(var(--gold-bright)), oklch(var(--gold)));
+    box-shadow: 0 6px 20px oklch(var(--gold) / 0.45);
+    transform: translateY(-1px);
+  }
+  .btn-gold:active {
+    transform: translateY(0);
   }
 
-  .btn-crimson {
-    background: linear-gradient(135deg, oklch(var(--crimson-dark)), oklch(var(--crimson)));
+  /* ── Maroon Button ── */
+  .btn-maroon {
+    background: linear-gradient(135deg, oklch(var(--maroon-dark)), oklch(var(--maroon)));
     color: oklch(var(--ivory));
+    font-family: 'Playfair Display', serif;
     font-weight: 600;
-    padding: 0.5rem 1.5rem;
+    padding: 0.625rem 1.75rem;
     border-radius: 0.125rem;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
+    letter-spacing: 0.04em;
   }
-  .btn-crimson:hover {
-    box-shadow: 0 4px 12px oklch(var(--crimson) / 0.4);
+  .btn-maroon:hover {
+    box-shadow: 0 6px 20px oklch(var(--maroon) / 0.45);
+    transform: translateY(-1px);
   }
 
+  /* ── Page Header ── */
   .page-header {
-    background: linear-gradient(135deg, oklch(var(--crimson-dark)) 0%, oklch(var(--crimson)) 60%, oklch(var(--crimson-light)) 100%);
+    background: linear-gradient(135deg, oklch(var(--maroon-dark)) 0%, oklch(var(--maroon)) 60%, oklch(var(--maroon-light)) 100%);
     color: oklch(var(--ivory));
     padding-top: 2rem;
     padding-bottom: 2rem;
@@ -185,11 +221,89 @@
     padding-right: 1.5rem;
   }
 
+  /* ── Admin Table Row ── */
   .admin-table-row {
     border-bottom: 1px solid oklch(var(--border));
     transition: background-color 0.15s ease;
   }
   .admin-table-row:hover {
     background-color: oklch(var(--gold) / 0.06);
+  }
+
+  /* ── Gold Ornament Divider ── */
+  .ornament-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 auto;
+  }
+  .ornament-divider::before,
+  .ornament-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, oklch(var(--gold) / 0.6), transparent);
+  }
+
+  /* ── Section Heading ── */
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: oklch(var(--maroon-dark));
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Gold Text ── */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, oklch(var(--gold-dark)), oklch(var(--gold-bright)), oklch(var(--gold-dark)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── WhatsApp Button ── */
+  .btn-whatsapp {
+    background: linear-gradient(135deg, #1a7a3c, #25a244);
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.125rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+  }
+  .btn-whatsapp:hover {
+    background: linear-gradient(135deg, #25a244, #2dc653);
+    box-shadow: 0 4px 12px rgba(37, 162, 68, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* ── Hero Overlay Text ── */
+  .hero-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Testimonial Card ── */
+  .testimonial-card {
+    background: oklch(var(--ivory-warm));
+    border: 1px solid oklch(var(--gold) / 0.3);
+    border-radius: 0.25rem;
+    padding: 1.5rem;
+    position: relative;
+    box-shadow: 0 4px 16px oklch(var(--maroon) / 0.06);
+  }
+  .testimonial-card::before {
+    content: '"';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: oklch(var(--gold) / 0.25);
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
   }
 }

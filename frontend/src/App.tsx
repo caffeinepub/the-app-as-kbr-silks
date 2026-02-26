@@ -1,4 +1,4 @@
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
 import Layout from './components/Layout';
 import Catalog from './pages/Catalog';
 import AdminSarees from './pages/AdminSarees';
@@ -18,6 +18,15 @@ const catalogRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Catalog,
+});
+
+// Redirect /admin → /admin/sarees
+const adminIndexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/sarees' });
+  },
 });
 
 const adminSareesRoute = createRoute({
@@ -52,6 +61,7 @@ const adminCustomersRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   catalogRoute,
+  adminIndexRoute,
   adminSareesRoute,
   adminOrdersRoute,
   adminCustomersRoute,

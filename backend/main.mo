@@ -1,19 +1,14 @@
+import AccessControl "authorization/access-control";
+import Array "mo:core/Array";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import Iter "mo:core/Iter";
-import Text "mo:core/Text";
+import Order "mo:core/Order";
+import Principal "mo:core/Principal";
 import Time "mo:core/Time";
 import Runtime "mo:core/Runtime";
-import Principal "mo:core/Principal";
-import Array "mo:core/Array";
-import Order "mo:core/Order";
-
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
-import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-
-
 
 actor {
   include MixinStorage();
@@ -152,14 +147,15 @@ actor {
     userProfiles.get(user);
   };
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async ?Text {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+      return ?("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
+    ?"User profile saved successfully";
   };
 
-  // Saree Operations - Admin only for mutations, public for reads
+  // Saree Operations
   public shared ({ caller }) func addSaree(
     name : Text,
     description : Text,
@@ -169,10 +165,11 @@ actor {
     stock : Nat,
     image : ?Storage.ExternalBlob,
   ) : async {
-    #StorageError : Text;
+    #Ok : Nat;
+    #Err : Text;
   } {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      return #StorageError("Unauthorized: Only admins can add sarees");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can add sarees");
     };
 
     let id = nextSareeId;
@@ -190,7 +187,7 @@ actor {
     };
 
     sarees.add(id, saree);
-    #StorageError("Saree added successfully");
+    #Ok(id);
   };
 
   public shared ({ caller }) func updateSaree(
@@ -203,47 +200,51 @@ actor {
     stock : Nat,
     image : ?Storage.ExternalBlob,
   ) : async {
-    #StorageError : Text;
+    #Ok : Text;
+    #Err : Text;
   } {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      return #StorageError("Unauthorized: Only admins can update sarees");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can update sarees");
     };
 
-    if (not sarees.containsKey(id)) {
-      return #StorageError("Saree not found");
-    };
-
-    let saree : Saree = {
-      id;
-      name;
-      description;
-      fabricType;
-      color;
-      price;
-      stock;
-      image;
-    };
-
-    sarees.add(id, saree);
-    #StorageError("Saree updated successfully");
-  };
-
-  public shared ({ caller }) func deleteSaree(id : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can delete sarees");
-    };
-
-    if (not sarees.containsKey(id)) {
-      Runtime.trap("Saree not found");
-    };
-    sarees.remove(id);
-  };
-
-  public query func getSaree(id : Nat) : async Saree {
     switch (sarees.get(id)) {
-      case (null) { Runtime.trap("Saree not found") };
-      case (?saree) { saree };
+      case (null) { #Err("Saree not found") };
+      case (?existing) {
+        let updatedSaree : Saree = {
+          existing with
+          name;
+          description;
+          fabricType;
+          color;
+          price;
+          stock;
+          image;
+        };
+        sarees.add(id, updatedSaree);
+        #Ok("Saree updated successfully");
+      };
     };
+  };
+
+  public shared ({ caller }) func deleteSaree(id : Nat) : async {
+    #Ok : Text;
+    #Err : Text;
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can delete sarees");
+    };
+
+    switch (sarees.get(id)) {
+      case (null) { #Err("Saree not found") };
+      case (_) {
+        sarees.remove(id);
+        #Ok("Saree deleted successfully");
+      };
+    };
+  };
+
+  public query func getSaree(id : Nat) : async ?Saree {
+    sarees.get(id);
   };
 
   public query func getAllSarees() : async [Saree] {
@@ -298,42 +299,50 @@ actor {
     };
   };
 
-  public shared ({ caller }) func updateOrderStatus(id : Nat, status : OrderStatus) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can update order status");
+  public shared ({ caller }) func updateOrderStatus(id : Nat, status : OrderStatus) : async {
+    #Ok : Text;
+    #Err : Text;
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can update order status");
     };
 
     switch (orders.get(id)) {
-      case (null) { Runtime.trap("Order not found") };
+      case (null) { #Err("Order not found") };
       case (?order) {
         let updatedOrder = {
           order with
           status;
         };
         orders.add(id, updatedOrder);
+        #Ok("Order status updated successfully");
       };
     };
   };
 
-  public shared ({ caller }) func updatePaymentStatus(id : Nat, paymentStatus : Text) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can update payment status");
+  public shared ({ caller }) func updatePaymentStatus(id : Nat, paymentStatus : Text) : async {
+    #Ok : Text;
+    #Err : Text;
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can update payment status");
     };
 
     switch (orders.get(id)) {
-      case (null) { Runtime.trap("Order not found") };
+      case (null) { #Err("Order not found") };
       case (?order) {
         let updatedOrder = {
           order with
           paymentStatus;
         };
         orders.add(id, updatedOrder);
+        #Ok("Payment status updated successfully");
       };
     };
   };
 
   public query ({ caller }) func getOrder(id : Nat) : async Order {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view order details");
     };
 
@@ -344,20 +353,23 @@ actor {
   };
 
   public query ({ caller }) func getAllOrders() : async [Order] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all orders");
     };
 
     orders.values().toArray().sort();
   };
 
-  public shared ({ caller }) func addCustomer(name : Text, phone : Text, email : ?Text, address : Text) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can add customers");
+  public shared ({ caller }) func addCustomer(name : Text, phone : Text, email : ?Text, address : Text) : async {
+    #Ok : Text;
+    #Err : Text;
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can add customers");
     };
 
     if (customers.containsKey(phone)) {
-      Runtime.trap("Customer with this phone already exists");
+      return #Err("Customer with this phone already exists");
     };
 
     let customer : Customer = {
@@ -369,15 +381,19 @@ actor {
     };
 
     customers.add(phone, customer);
+    #Ok("Customer added successfully");
   };
 
-  public shared ({ caller }) func updateCustomer(phone : Text, name : Text, email : ?Text, address : Text) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can update customers");
+  public shared ({ caller }) func updateCustomer(phone : Text, name : Text, email : ?Text, address : Text) : async {
+    #Ok : Text;
+    #Err : Text;
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      return #Err("Unauthorized: Only admins can update customers");
     };
 
     switch (customers.get(phone)) {
-      case (null) { Runtime.trap("Customer not found") };
+      case (null) { #Err("Customer not found") };
       case (?customer) {
         let updatedCustomer = {
           customer with
@@ -386,12 +402,13 @@ actor {
           address;
         };
         customers.add(phone, updatedCustomer);
+        #Ok("Customer updated successfully");
       };
     };
   };
 
   public query ({ caller }) func getCustomer(phone : Text) : async Customer {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view customer details");
     };
 
@@ -402,7 +419,7 @@ actor {
   };
 
   public query ({ caller }) func getAllCustomers() : async [Customer] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all customers");
     };
 

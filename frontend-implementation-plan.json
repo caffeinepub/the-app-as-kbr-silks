@@ -1,31 +1,31 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update alternate contact number in business configuration",
+  "title": "Fix admin authorization check for adding sarees",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Update the alternate phone number to 7981314611 in constants and ensure all UI references display the updated number",
+      "id": "REQ-2",
+      "summary": "Fix the AdminSarees page to ensure the addSaree mutation works correctly for users authenticated via the OwnerVerificationGate by adding proper error handling and user feedback when the backend authorization check fails.",
       "acceptanceCriteria": [
-        "The alternate contact number in frontend/src/config/constants.ts is set to 7981314611.",
-        "All UI locations that display the alternate phone number now show 7981314611.",
-        "The primary/main phone number and WhatsApp link remain unchanged."
+        "The Add New Saree form submits successfully for an admin authenticated via the OwnerVerificationGate.",
+        "No 'Unauthorized' error banner appears when a valid admin submits the form.",
+        "The saree is saved and appears in the admin saree list after submission."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/config/constants.ts",
+          "path": "frontend/src/pages/AdminSarees.tsx",
           "operation": "modify",
-          "description": "Update the alternate phone number constant to '7981314611'. Locate the existing alternate phone number field in the constants object and replace its value while leaving all other constants (primary phone, WhatsApp link, owner phone numbers) unchanged."
+          "description": "Update the addSaree mutation error handling to provide clearer feedback when authorization fails. Add a helper that checks if the user has passed the OwnerVerificationGate before attempting the mutation. If the mutation fails with an authorization error, display a detailed error message that instructs the user to refresh the page or re-authenticate. Also add logging to capture the full error details for debugging the backend authorization mismatch."
         },
         {
-          "path": "frontend/src/components/Layout.tsx",
+          "path": "frontend/src/hooks/useOwnerAuth.ts",
           "operation": "modify",
-          "description": "Verify that the Layout component (header and footer) correctly references the alternate phone number from constants.ts. If the alternate number is displayed in the header or footer contact info, ensure it pulls from the updated constant. No changes needed if the component already imports and uses the constant correctly."
+          "description": "Add a public method or exported helper that allows other components to check if the owner is currently verified according to sessionStorage. This will enable AdminSarees to verify the gate state before submitting the addSaree mutation and provide a better user experience."
         },
         {
-          "path": "frontend/src/pages/Catalog.tsx",
+          "path": "frontend/src/utils/retryWithBackoff.ts",
           "operation": "modify",
-          "description": "Review any contact information sections on the Catalog page. If the alternate phone number is displayed (e.g., in a contact info banner, help section, or customer support area), ensure it references the updated constant from constants.ts. Update the import and usage if needed."
+          "description": "Enhance the convertErrorToUserMessage function to recognize 'Unauthorized: Only admins can add sarees' errors and provide a specific user-facing message that explains the authorization issue and suggests re-authentication. This ensures that authorization errors from the backend are surfaced clearly to the user."
         }
       ]
     }

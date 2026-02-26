@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { OWNER_PHONE_NUMBERS } from '@/config/constants';
 
 const SESSION_KEY = 'kbr_owner_verified';
+const ADMIN_PASSWORD = '9966';
 
 function getStoredVerification(): boolean {
   try {
@@ -14,8 +15,22 @@ function getStoredVerification(): boolean {
 export function useOwnerAuth() {
   const [verified, setVerified] = useState<boolean>(getStoredVerification);
 
-  const verifyPhoneNumber = useCallback((phone: string): boolean => {
-    const cleaned = phone.replace(/\D/g, '').replace(/^91/, '');
+  const verifyPhoneNumber = useCallback((input: string): boolean => {
+    const trimmed = input.trim();
+
+    // Check admin password first
+    if (trimmed === ADMIN_PASSWORD) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+      } catch {
+        // ignore
+      }
+      setVerified(true);
+      return true;
+    }
+
+    // Check authorized phone numbers
+    const cleaned = trimmed.replace(/\D/g, '').replace(/^91/, '');
     const isOwner = OWNER_PHONE_NUMBERS.includes(cleaned);
     if (isOwner) {
       try {

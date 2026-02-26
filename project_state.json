@@ -1,22 +1,33 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Saree management application with admin authentication and product management features. Admins are unable to add sarees despite being logged in.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [
+  "known_issues": [
+    "Admin users are unable to add sarees despite being authenticated as admin"
+  ],
+  "isFixRequest": true,
+  "existing_features": [],
+  "new_feature_requests": [
     {
-      "id": "feature-update-the-alternate-phone-number-displayed-in-the-app-in-frontend-src-config-constants-ts-to-7981314611-ensure-this-updated-number-appears-wherever-the-alternate-contact-number-is-referenced-in-the-ui-e-g-header-footer-contact-info-sections",
-      "title": "Update the alternate phone number displayed in the app (in frontend/src/config/constants.ts) to 7981314611. Ensure this updated number appears wherever the alternate contact number is referenced in the UI (e.g., header, footer, contact info sections).",
+      "id": "AR-1",
+      "summary": "Fix the backend authorization check in the addSaree function so that users authenticated via the secondary admin password ('9966') or authorized phone numbers are correctly recognized as admins and allowed to add sarees. Currently the backend rejects their calls with 'Unauthorized: Only admins can add sarees' even though they have successfully passed the OwnerVerificationGate.",
       "reqIds": [
         "REQ-1"
       ],
-      "version": 1
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Fix the frontend AdminSarees page to ensure the addSaree mutation passes the correct caller identity or auth context that the backend expects. If the backend uses caller-based principal checks, the frontend must either pass the appropriate credentials or the backend must be updated to not require Internet Identity principal when the admin is verified via the password/phone gate.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Update alternate contact number in business configuration",
+  "gameProjectType": "none",
+  "projectName": "Fix admin authorization check for adding sarees",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

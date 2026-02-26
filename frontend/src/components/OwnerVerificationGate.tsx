@@ -11,7 +11,7 @@ interface OwnerVerificationGateProps {
 
 export default function OwnerVerificationGate({ children }: OwnerVerificationGateProps) {
   const { isVerified, verifyPhoneNumber } = useOwnerAuth();
-  const [phone, setPhone] = useState('');
+  const [input, setInput] = useState('');
   const [error, setError] = useState('');
   const [attempted, setAttempted] = useState(false);
 
@@ -22,9 +22,9 @@ export default function OwnerVerificationGate({ children }: OwnerVerificationGat
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAttempted(true);
-    const success = verifyPhoneNumber(phone.trim());
+    const success = verifyPhoneNumber(input.trim());
     if (!success) {
-      setError('Access denied. This number is not authorized to access the admin panel.');
+      setError('Access denied. Invalid phone number or password.');
     } else {
       setError('');
     }
@@ -59,7 +59,7 @@ export default function OwnerVerificationGate({ children }: OwnerVerificationGat
             Admin Access
           </h2>
           <p className="text-sm font-body mt-1" style={{ color: 'oklch(0.65 0.06 60)' }}>
-            Enter your owner phone number to continue
+            Enter your phone number or admin password
           </p>
         </div>
 
@@ -67,11 +67,11 @@ export default function OwnerVerificationGate({ children }: OwnerVerificationGat
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-5">
           <div className="space-y-2">
             <Label
-              htmlFor="owner-phone"
+              htmlFor="owner-input"
               className="font-body text-sm font-medium"
               style={{ color: 'oklch(0.78 0.10 65)' }}
             >
-              Phone Number
+              Phone Number or Password
             </Label>
             <div className="relative">
               <Phone
@@ -80,12 +80,12 @@ export default function OwnerVerificationGate({ children }: OwnerVerificationGat
                 style={{ color: 'oklch(0.62 0.16 65)' }}
               />
               <Input
-                id="owner-phone"
-                type="tel"
-                placeholder="Enter your phone number"
-                value={phone}
+                id="owner-input"
+                type="text"
+                placeholder="Phone number or admin password"
+                value={input}
                 onChange={(e) => {
-                  setPhone(e.target.value);
+                  setInput(e.target.value);
                   if (attempted) setError('');
                 }}
                 className="pl-9 font-body"
@@ -96,8 +96,7 @@ export default function OwnerVerificationGate({ children }: OwnerVerificationGat
                     : 'oklch(0.78 0.14 72 / 0.3)',
                   color: 'oklch(0.92 0.04 80)',
                 }}
-                autoComplete="tel"
-                inputMode="numeric"
+                autoComplete="off"
               />
             </div>
           </div>

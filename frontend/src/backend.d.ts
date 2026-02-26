@@ -75,13 +75,28 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addCustomer(name: string, phone: string, email: string | null, address: string): Promise<void>;
+    addCustomer(name: string, phone: string, email: string | null, address: string): Promise<{
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
+    }>;
     addSaree(name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob | null): Promise<{
-        __kind__: "StorageError";
-        StorageError: string;
+        __kind__: "Ok";
+        Ok: bigint;
+    } | {
+        __kind__: "Err";
+        Err: string;
     }>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    deleteSaree(id: bigint): Promise<void>;
+    deleteSaree(id: bigint): Promise<{
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
+    }>;
     getAllCustomers(): Promise<Array<Customer>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllSarees(): Promise<Array<Saree>>;
@@ -89,17 +104,38 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getCustomer(phone: string): Promise<Customer>;
     getOrder(id: bigint): Promise<Order>;
-    getSaree(id: bigint): Promise<Saree>;
+    getSaree(id: bigint): Promise<Saree | null>;
     getSareesByPrice(): Promise<Array<Saree>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     placeOrder(customerName: string, customerPhone: string, items: Array<OrderedItem>, productDetails: Array<ProductDetail>): Promise<bigint>;
-    saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    updateCustomer(phone: string, name: string, email: string | null, address: string): Promise<void>;
-    updateOrderStatus(id: bigint, status: OrderStatus): Promise<void>;
-    updatePaymentStatus(id: bigint, paymentStatus: string): Promise<void>;
+    saveCallerUserProfile(profile: UserProfile): Promise<string | null>;
+    updateCustomer(phone: string, name: string, email: string | null, address: string): Promise<{
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
+    }>;
+    updateOrderStatus(id: bigint, status: OrderStatus): Promise<{
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
+    }>;
+    updatePaymentStatus(id: bigint, paymentStatus: string): Promise<{
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
+    }>;
     updateSaree(id: bigint, name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob | null): Promise<{
-        __kind__: "StorageError";
-        StorageError: string;
+        __kind__: "Ok";
+        Ok: string;
+    } | {
+        __kind__: "Err";
+        Err: string;
     }>;
 }

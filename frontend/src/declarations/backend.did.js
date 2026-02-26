@@ -109,7 +109,7 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addCustomer' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-      [],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
       [],
     ),
   'addSaree' : IDL.Func(
@@ -122,11 +122,15 @@ export const idlService = IDL.Service({
         IDL.Nat,
         IDL.Opt(ExternalBlob),
       ],
-      [IDL.Variant({ 'StorageError' : IDL.Text })],
+      [IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : IDL.Text })],
       [],
     ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'deleteSaree' : IDL.Func([IDL.Nat], [], []),
+  'deleteSaree' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+      [],
+    ),
   'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAllSarees' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
@@ -134,7 +138,7 @@ export const idlService = IDL.Service({
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCustomer' : IDL.Func([IDL.Text], [Customer], ['query']),
   'getOrder' : IDL.Func([IDL.Nat], [Order], ['query']),
-  'getSaree' : IDL.Func([IDL.Nat], [Saree], ['query']),
+  'getSaree' : IDL.Func([IDL.Nat], [IDL.Opt(Saree)], ['query']),
   'getSareesByPrice' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -147,14 +151,22 @@ export const idlService = IDL.Service({
       [IDL.Nat],
       [],
     ),
-  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [IDL.Opt(IDL.Text)], []),
   'updateCustomer' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-      [],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
       [],
     ),
-  'updateOrderStatus' : IDL.Func([IDL.Nat, OrderStatus], [], []),
-  'updatePaymentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+  'updateOrderStatus' : IDL.Func(
+      [IDL.Nat, OrderStatus],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+      [],
+    ),
+  'updatePaymentStatus' : IDL.Func(
+      [IDL.Nat, IDL.Text],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+      [],
+    ),
   'updateSaree' : IDL.Func(
       [
         IDL.Nat,
@@ -166,7 +178,7 @@ export const idlService = IDL.Service({
         IDL.Nat,
         IDL.Opt(ExternalBlob),
       ],
-      [IDL.Variant({ 'StorageError' : IDL.Text })],
+      [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
       [],
     ),
 });
@@ -272,7 +284,7 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addCustomer' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-        [],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
         [],
       ),
     'addSaree' : IDL.Func(
@@ -285,11 +297,15 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Opt(ExternalBlob),
         ],
-        [IDL.Variant({ 'StorageError' : IDL.Text })],
+        [IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : IDL.Text })],
         [],
       ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'deleteSaree' : IDL.Func([IDL.Nat], [], []),
+    'deleteSaree' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+        [],
+      ),
     'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAllSarees' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
@@ -297,7 +313,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCustomer' : IDL.Func([IDL.Text], [Customer], ['query']),
     'getOrder' : IDL.Func([IDL.Nat], [Order], ['query']),
-    'getSaree' : IDL.Func([IDL.Nat], [Saree], ['query']),
+    'getSaree' : IDL.Func([IDL.Nat], [IDL.Opt(Saree)], ['query']),
     'getSareesByPrice' : IDL.Func([], [IDL.Vec(Saree)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
@@ -310,14 +326,22 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
-    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [IDL.Opt(IDL.Text)], []),
     'updateCustomer' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-        [],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
         [],
       ),
-    'updateOrderStatus' : IDL.Func([IDL.Nat, OrderStatus], [], []),
-    'updatePaymentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+    'updateOrderStatus' : IDL.Func(
+        [IDL.Nat, OrderStatus],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+        [],
+      ),
+    'updatePaymentStatus' : IDL.Func(
+        [IDL.Nat, IDL.Text],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
+        [],
+      ),
     'updateSaree' : IDL.Func(
         [
           IDL.Nat,
@@ -329,7 +353,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Opt(ExternalBlob),
         ],
-        [IDL.Variant({ 'StorageError' : IDL.Text })],
+        [IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text })],
         [],
       ),
   });

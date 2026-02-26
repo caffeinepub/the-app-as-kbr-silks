@@ -90,14 +90,16 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addCustomer' : ActorMethod<
     [string, string, [] | [string], string],
-    undefined
+    { 'Ok' : string } |
+      { 'Err' : string }
   >,
   'addSaree' : ActorMethod<
     [string, string, FabricType, string, bigint, bigint, [] | [ExternalBlob]],
-    { 'StorageError' : string }
+    { 'Ok' : bigint } |
+      { 'Err' : string }
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'deleteSaree' : ActorMethod<[bigint], undefined>,
+  'deleteSaree' : ActorMethod<[bigint], { 'Ok' : string } | { 'Err' : string }>,
   'getAllCustomers' : ActorMethod<[], Array<Customer>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAllSarees' : ActorMethod<[], Array<Saree>>,
@@ -105,7 +107,7 @@ export interface _SERVICE {
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCustomer' : ActorMethod<[string], Customer>,
   'getOrder' : ActorMethod<[bigint], Order>,
-  'getSaree' : ActorMethod<[bigint], Saree>,
+  'getSaree' : ActorMethod<[bigint], [] | [Saree]>,
   'getSareesByPrice' : ActorMethod<[], Array<Saree>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
@@ -113,13 +115,22 @@ export interface _SERVICE {
     [string, string, Array<OrderedItem>, Array<ProductDetail>],
     bigint
   >,
-  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], [] | [string]>,
   'updateCustomer' : ActorMethod<
     [string, string, [] | [string], string],
-    undefined
+    { 'Ok' : string } |
+      { 'Err' : string }
   >,
-  'updateOrderStatus' : ActorMethod<[bigint, OrderStatus], undefined>,
-  'updatePaymentStatus' : ActorMethod<[bigint, string], undefined>,
+  'updateOrderStatus' : ActorMethod<
+    [bigint, OrderStatus],
+    { 'Ok' : string } |
+      { 'Err' : string }
+  >,
+  'updatePaymentStatus' : ActorMethod<
+    [bigint, string],
+    { 'Ok' : string } |
+      { 'Err' : string }
+  >,
   'updateSaree' : ActorMethod<
     [
       bigint,
@@ -131,7 +142,8 @@ export interface _SERVICE {
       bigint,
       [] | [ExternalBlob],
     ],
-    { 'StorageError' : string }
+    { 'Ok' : string } |
+      { 'Err' : string }
   >,
 }
 export declare const idlService: IDL.ServiceClass;

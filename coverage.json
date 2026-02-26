@@ -1,36 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T07:56:59.505Z",
+  "generatedAt": "2026-02-26T10:45:18.459Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 2,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the alternate phone number displayed in the app (in frontend/src/config/constants.ts) to 7981314611. Ensure this updated number appears wherever the alternate contact number is referenced in the UI (e.g., header, footer, contact info sections).",
-        "status": "implemented",
+        "summary": "Fix the backend authorization check in the addSaree function so that users authenticated via the secondary admin password ('9966') or authorized phone numbers are correctly recognized as admins and allowed to add sarees. Currently the backend rejects their calls with 'Unauthorized: Only admins can add sarees' even though they have successfully passed the OwnerVerificationGate.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Fix the frontend AdminSarees page to ensure the addSaree mutation passes the correct caller identity or auth context that the backend expects. If the backend uses caller-based principal checks, the frontend must either pass the appropriate credentials or the backend must be updated to not require Internet Identity principal when the admin is verified via the password/phone gate.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/config/constants.ts",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/Catalog.tsx"
+          "frontend/src/pages/AdminSarees.tsx",
+          "frontend/src/hooks/useOwnerAuth.ts",
+          "frontend/src/utils/retryWithBackoff.ts"
         ],
-        "matchedFiles": [
-          "frontend/src/config/constants.ts"
-        ]
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/config/constants.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

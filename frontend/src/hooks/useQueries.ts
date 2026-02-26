@@ -1,50 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { FabricType, OrderStatus, type Saree, type Order, type Customer, type UserProfile, type OrderedItem, type ProductDetail } from '../backend';
+import { FabricType, OrderStatus, type Saree, type Order, type Customer, type UserProfile } from '../backend';
 import { ExternalBlob } from '../backend';
-import { retryWithBackoff } from '../utils/retryWithBackoff';
 
-export const QUERY_KEYS = {
-  sarees: ['sarees'] as const,
-  orders: ['orders'] as const,
-  customers: ['customers'] as const,
-  currentUserProfile: ['currentUserProfile'] as const,
-};
-
-// ─── Saree Queries ───────────────────────────────────────────────────────────
+// ─── Sarees ──────────────────────────────────────────────────────────────────
 
 export function useGetAllSarees() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Saree[]>({
-    queryKey: QUERY_KEYS.sarees,
+    queryKey: ['sarees'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) return [];
       const result = await actor.getAllSarees();
       return result;
     },
     enabled: !!actor && !isFetching,
-    // staleTime: 0 ensures data is always considered stale and will refetch on mount/focus
     staleTime: 0,
-    // Do NOT set gcTime: 0 — that causes the cache entry to be immediately garbage collected,
-    // which breaks invalidateQueries/refetchQueries in mutation onSuccess callbacks.
-    // Use the default gcTime (5 minutes) so the cache entry persists for refetching.
-    refetchOnMount: 'always',
+    gcTime: 0,
     refetchOnWindowFocus: true,
-  });
-}
-
-export function useGetSareesByPrice() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Saree[]>({
-    queryKey: [...QUERY_KEYS.sarees, 'byPrice'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getSareesByPrice();
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 0,
   });
 }
 
@@ -63,22 +37,26 @@ export function useAddSaree() {
       image: ExternalBlob | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return retryWithBackoff(() =>
-        actor.addSaree(
-          params.name,
-          params.description,
-          params.fabricType,
-          params.color,
-          params.price,
-          params.stock,
-          params.image,
-        )
+      const result = await actor.addSaree(
+        params.name,
+        params.description,
+        params.fabricType,
+        params.color,
+        params.price,
+        params.stock,
+        params.image,
       );
+      if (result.__kind__ === 'Err') {
+        throw new Error(result.Err);
+      }
+      return result.Ok;
     },
     onSuccess: async () => {
-      // Invalidate marks the cache as stale, then refetchQueries actively re-runs the query
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
+      await queryClient.invalidateQueries({ queryKey: ['sarees'] });
+      await queryClient.refetchQueries({ queryKey: ['sarees'], type: 'active' });
+    },
+    onError: (error) => {
+      console.error('addSaree mutation error:', error);
     },
   });
 }
@@ -99,22 +77,27 @@ export function useUpdateSaree() {
       image: ExternalBlob | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return retryWithBackoff(() =>
-        actor.updateSaree(
-          params.id,
-          params.name,
-          params.description,
-          params.fabricType,
-          params.color,
-          params.price,
-          params.stock,
-          params.image,
-        )
+      const result = await actor.updateSaree(
+        params.id,
+        params.name,
+        params.description,
+        params.fabricType,
+        params.color,
+        params.price,
+        params.stock,
+        params.image,
       );
+      if (result.__kind__ === 'Err') {
+        throw new Error(result.Err);
+      }
+      return result.Ok;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
+      await queryClient.invalidateQueries({ queryKey: ['sarees'] });
+      await queryClient.refetchQueries({ queryKey: ['sarees'], type: 'active' });
+    },
+    onError: (error) => {
+      console.error('updateSaree mutation error:', error);
     },
   });
 }
@@ -126,30 +109,47 @@ export function useDeleteSaree() {
   return useMutation({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.deleteSaree(id);
+      const result = await actor.deleteSaree(id);
+      if (result.__kind__ === 'Err') {
+        throw new Error(result.Err);
+      }
+      return result.Ok;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sarees });
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.sarees, type: 'active' });
+      await queryClient.invalidateQueries({ queryKey: ['sarees'] });
+      await queryClient.refetchQueries({ queryKey: ['sarees'], type: 'active' });
+    },
+    onError: (error) => {
+      console.error('deleteSaree mutation error:', error);
     },
   });
 }
 
-// ─── Order Queries ────────────────────────────────────────────────────────────
+// ─── Orders ───────────────────────────────────────────────────────────────────
 
 export function useGetAllOrders() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Order[]>({
-    queryKey: QUERY_KEYS.orders,
+    queryKey: ['orders'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) return [];
       return actor.getAllOrders();
     },
     enabled: !!actor && !isFetching,
     refetchInterval: 15000,
-    staleTime: 0,
   });
+}
+
+export interface PlaceOrderParams {
+  sareeId: bigint;
+  quantity: bigint;
+  productName: string;
+  fabricType: FabricType;
+  color: string;
+  unitPrice: bigint;
+  customerName: string;
+  customerPhone: string;
 }
 
 export function usePlaceOrder() {
@@ -157,22 +157,23 @@ export function usePlaceOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: {
-      customerName: string;
-      customerPhone: string;
-      items: OrderedItem[];
-      productDetails: ProductDetail[];
-    }) => {
+    mutationFn: async (params: PlaceOrderParams) => {
       if (!actor) throw new Error('Actor not available');
       return actor.placeOrder(
         params.customerName,
         params.customerPhone,
-        params.items,
-        params.productDetails,
+        [{ sareeId: params.sareeId, quantity: params.quantity }],
+        [{
+          name: params.productName,
+          fabricType: params.fabricType,
+          color: params.color,
+          unitPrice: params.unitPrice,
+          quantity: params.quantity,
+        }],
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.orders });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -182,12 +183,14 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { id: bigint; status: OrderStatus }) => {
+    mutationFn: async ({ id, status }: { id: bigint; status: OrderStatus }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateOrderStatus(params.id, params.status);
+      const result = await actor.updateOrderStatus(id, status);
+      if (result.__kind__ === 'Err') throw new Error(result.Err);
+      return result.Ok;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.orders });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -197,29 +200,30 @@ export function useUpdatePaymentStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { id: bigint; paymentStatus: string }) => {
+    mutationFn: async ({ id, paymentStatus }: { id: bigint; paymentStatus: string }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updatePaymentStatus(params.id, params.paymentStatus);
+      const result = await actor.updatePaymentStatus(id, paymentStatus);
+      if (result.__kind__ === 'Err') throw new Error(result.Err);
+      return result.Ok;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.orders });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
 
-// ─── Customer Queries ─────────────────────────────────────────────────────────
+// ─── Customers ────────────────────────────────────────────────────────────────
 
 export function useGetAllCustomers() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Customer[]>({
-    queryKey: QUERY_KEYS.customers,
+    queryKey: ['customers'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) return [];
       return actor.getAllCustomers();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 0,
   });
 }
 
@@ -235,10 +239,12 @@ export function useAddCustomer() {
       address: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addCustomer(params.name, params.phone, params.email, params.address);
+      const result = await actor.addCustomer(params.name, params.phone, params.email, params.address);
+      if (result.__kind__ === 'Err') throw new Error(result.Err);
+      return result.Ok;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
     },
   });
 }
@@ -255,21 +261,23 @@ export function useUpdateCustomer() {
       address: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateCustomer(params.phone, params.name, params.email, params.address);
+      const result = await actor.updateCustomer(params.phone, params.name, params.email, params.address);
+      if (result.__kind__ === 'Err') throw new Error(result.Err);
+      return result.Ok;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
     },
   });
 }
 
-// ─── User Profile Queries ─────────────────────────────────────────────────────
+// ─── User Profile ─────────────────────────────────────────────────────────────
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
   const query = useQuery<UserProfile | null>({
-    queryKey: QUERY_KEYS.currentUserProfile,
+    queryKey: ['currentUserProfile'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
@@ -295,7 +303,7 @@ export function useSaveCallerUserProfile() {
       return actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUserProfile });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }

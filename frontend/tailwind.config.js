@@ -71,20 +71,29 @@ export default {
                     border: 'oklch(var(--sidebar-border))',
                     ring: 'oklch(var(--sidebar-ring))'
                 },
-                // Brand tokens
-                crimson: {
-                    DEFAULT: 'oklch(var(--crimson))',
-                    light: 'oklch(var(--crimson-light))',
-                    dark: 'oklch(var(--crimson-dark))',
+                // Brand tokens — Royal Maroon & Antique Gold
+                maroon: {
+                    DEFAULT: 'oklch(var(--maroon))',
+                    light: 'oklch(var(--maroon-light))',
+                    dark: 'oklch(var(--maroon-dark))',
+                    deep: 'oklch(var(--maroon-deep))',
                 },
                 gold: {
                     DEFAULT: 'oklch(var(--gold))',
                     light: 'oklch(var(--gold-light))',
                     dark: 'oklch(var(--gold-dark))',
+                    bright: 'oklch(var(--gold-bright))',
                 },
                 ivory: {
                     DEFAULT: 'oklch(var(--ivory))',
+                    warm: 'oklch(var(--ivory-warm))',
                     dark: 'oklch(var(--ivory-dark))',
+                },
+                // Legacy aliases
+                crimson: {
+                    DEFAULT: 'oklch(var(--crimson))',
+                    light: 'oklch(var(--crimson-light))',
+                    dark: 'oklch(var(--crimson-dark))',
                 },
                 teal: {
                     DEFAULT: 'oklch(var(--teal))',
@@ -97,9 +106,11 @@ export default {
             },
             boxShadow: {
                 xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                silk: '0 4px 20px oklch(0.38 0.16 22 / 0.12)',
-                'silk-lg': '0 8px 40px oklch(0.38 0.16 22 / 0.18)',
-                gold: '0 4px 16px oklch(0.78 0.14 72 / 0.35)',
+                silk: '0 4px 20px oklch(0.32 0.16 18 / 0.12)',
+                'silk-lg': '0 8px 40px oklch(0.32 0.16 18 / 0.20)',
+                gold: '0 4px 16px oklch(0.75 0.15 68 / 0.40)',
+                'gold-lg': '0 8px 32px oklch(0.75 0.15 68 / 0.35)',
+                maroon: '0 4px 16px oklch(0.32 0.16 18 / 0.30)',
             },
             keyframes: {
                 'accordion-down': {
@@ -113,12 +124,22 @@ export default {
                 shimmer: {
                     '0%': { backgroundPosition: '-200% 0' },
                     '100%': { backgroundPosition: '200% 0' },
-                }
+                },
+                'fade-up': {
+                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                'gold-pulse': {
+                    '0%, 100%': { boxShadow: '0 0 0 0 oklch(0.75 0.15 68 / 0.4)' },
+                    '50%': { boxShadow: '0 0 0 8px oklch(0.75 0.15 68 / 0)' },
+                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
                 shimmer: 'shimmer 2s linear infinite',
+                'fade-up': 'fade-up 0.6s ease-out forwards',
+                'gold-pulse': 'gold-pulse 2s ease-in-out infinite',
             }
         }
     },

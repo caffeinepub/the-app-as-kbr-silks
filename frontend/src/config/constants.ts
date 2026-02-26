@@ -8,4 +8,4 @@ export const BUSINESS_PHONE_ALT_DISPLAY = '+91 79813 14611';
 export const WHATSAPP_LINK = `https://wa.me/919573147399?text=${encodeURIComponent('Hello KBR Silks, I am interested in your sarees. Please help me choose.')}`;
 
 // Owner phone numbers — only these numbers can access the Admin Panel
-export const OWNER_PHONE_NUMBERS: string[] = ['9573147399', '7981314611', '7981324611'];
+export const OWNER_PHONE_NUMBERS: string[] = ['7981314611', '9573147399'];

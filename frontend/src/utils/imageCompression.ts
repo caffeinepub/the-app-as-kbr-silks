@@ -1,111 +1,108 @@
 /**
- * Client-side image compression using the browser Canvas API.
- * Compresses images to stay under the Internet Computer's message size limit.
+ * Compresses an image file using the Canvas API.
+ * Returns a Uint8Array<ArrayBuffer> of the compressed JPEG bytes.
+ * Throws a descriptive error if compression fails or the result exceeds the IC limit.
  */
+export async function compressImage(
+  file: File,
+  maxWidth = 800,
+  maxHeight = 1000,
+  quality = 0.75,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const MAX_SIZE = 1_400_000; // 1.4MB IC message limit
 
-const MAX_SIZE_BYTES = 1.4 * 1024 * 1024; // 1.4MB target (safe under IC's ~2MB limit)
-const MAX_DIMENSION = 1200; // Max width or height in pixels
-
-export interface CompressionResult {
-  blob: Blob;
-  bytes: Uint8Array<ArrayBuffer>;
-  originalSizeKB: number;
-  compressedSizeKB: number;
-  wasCompressed: boolean;
-}
-
-/**
- * Compresses an image File using the Canvas API.
- * Automatically resizes and reduces quality to stay under MAX_SIZE_BYTES.
- */
-export async function compressImage(file: File): Promise<CompressionResult> {
-  const originalSizeKB = Math.round(file.size / 1024);
-
-  // If already small enough, just convert to bytes
-  if (file.size <= MAX_SIZE_BYTES) {
-    const buf = await file.arrayBuffer() as ArrayBuffer;
-    const bytes = new Uint8Array(buf) as Uint8Array<ArrayBuffer>;
-    return {
-      blob: file,
-      bytes,
-      originalSizeKB,
-      compressedSizeKB: originalSizeKB,
-      wasCompressed: false,
-    };
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  if (!validTypes.includes(file.type)) {
+    throw new Error(`Unsupported image format: ${file.type}. Please use JPG, PNG, or WebP.`);
   }
 
-  // Load image into an ImageBitmap
-  const imageBitmap = await createImageBitmap(file);
-  const { width: origW, height: origH } = imageBitmap;
-
-  // Calculate scaled dimensions
-  let targetW = origW;
-  let targetH = origH;
-  if (origW > MAX_DIMENSION || origH > MAX_DIMENSION) {
-    const ratio = Math.min(MAX_DIMENSION / origW, MAX_DIMENSION / origH);
-    targetW = Math.round(origW * ratio);
-    targetH = Math.round(origH * ratio);
-  }
-
-  const canvas = document.createElement('canvas');
-  canvas.width = targetW;
-  canvas.height = targetH;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas 2D context not available');
-
-  ctx.drawImage(imageBitmap, 0, 0, targetW, targetH);
-  imageBitmap.close();
-
-  // Try progressively lower quality until under size limit
-  const qualities = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35];
-  let resultBlob: Blob | null = null;
-
-  for (const quality of qualities) {
-    const blob = await canvasToBlob(canvas, 'image/jpeg', quality);
-    if (blob.size <= MAX_SIZE_BYTES) {
-      resultBlob = blob;
-      break;
-    }
-    // If still too large at lowest quality, use it anyway
-    if (quality === qualities[qualities.length - 1]) {
-      resultBlob = blob;
-    }
-  }
-
-  if (!resultBlob) {
-    // Fallback: use the file as-is
-    const buf = await file.arrayBuffer() as ArrayBuffer;
-    const bytes = new Uint8Array(buf) as Uint8Array<ArrayBuffer>;
-    return { blob: file, bytes, originalSizeKB, compressedSizeKB: originalSizeKB, wasCompressed: false };
-  }
-
-  const buf = await resultBlob.arrayBuffer() as ArrayBuffer;
-  const bytes = new Uint8Array(buf) as Uint8Array<ArrayBuffer>;
-  return {
-    blob: resultBlob,
-    bytes,
-    originalSizeKB,
-    compressedSizeKB: Math.round(resultBlob.size / 1024),
-    wasCompressed: true,
-  };
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error('Canvas toBlob returned null'));
-      },
-      type,
-      quality
+  // Create ImageBitmap from file
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (err) {
+    throw new Error(
+      `Could not read image file. Please try a different image. (${err instanceof Error ? err.message : String(err)})`,
     );
-  });
-}
+  }
 
-/** Format bytes as a human-readable string */
-export function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  try {
+    // Calculate scaled dimensions preserving aspect ratio
+    let { width, height } = bitmap;
+    const aspectRatio = width / height;
+
+    if (width > maxWidth) {
+      width = maxWidth;
+      height = Math.round(width / aspectRatio);
+    }
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = Math.round(height * aspectRatio);
+    }
+
+    // Draw to canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas 2D context is not available in this browser.');
+    }
+
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    // Try progressively lower quality until within size limit
+    const qualities = [quality, 0.65, 0.55, 0.45, 0.35];
+    for (const q of qualities) {
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', q),
+      );
+
+      if (!blob) {
+        throw new Error('Canvas toBlob returned null. The image could not be compressed.');
+      }
+
+      const arrayBuffer = blob.arrayBuffer
+        ? await blob.arrayBuffer()
+        : await new Response(blob).arrayBuffer();
+
+      const bytes = new Uint8Array(arrayBuffer as ArrayBuffer) as Uint8Array<ArrayBuffer>;
+
+      if (bytes.length <= MAX_SIZE) {
+        return bytes;
+      }
+    }
+
+    // If still too large after all quality reductions, try smaller dimensions
+    const smallerCanvas = document.createElement('canvas');
+    smallerCanvas.width = Math.round(width * 0.6);
+    smallerCanvas.height = Math.round(height * 0.6);
+    const smallerCtx = smallerCanvas.getContext('2d');
+    if (smallerCtx) {
+      smallerCtx.drawImage(bitmap, 0, 0, smallerCanvas.width, smallerCanvas.height);
+      const blob = await new Promise<Blob | null>((resolve) =>
+        smallerCanvas.toBlob(resolve, 'image/jpeg', 0.35),
+      );
+      if (blob) {
+        const arrayBuffer = blob.arrayBuffer
+          ? await blob.arrayBuffer()
+          : await new Response(blob).arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer as ArrayBuffer) as Uint8Array<ArrayBuffer>;
+        if (bytes.length <= MAX_SIZE) {
+          return bytes;
+        }
+        throw new Error(
+          `Image is still too large (${(bytes.length / 1024 / 1024).toFixed(2)}MB) after maximum compression. Please use a smaller image.`,
+        );
+      }
+    }
+
+    throw new Error(
+      'Could not compress image to fit within the 1.4MB limit. Please use a smaller image.',
+    );
+  } finally {
+    bitmap.close();
+  }
 }

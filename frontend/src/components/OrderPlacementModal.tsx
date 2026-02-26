@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Loader2, ShoppingCart, IndianRupee, CheckCircle2 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +34,6 @@ export default function OrderPlacementModal({ saree, open, onClose }: OrderPlace
   const [orderId, setOrderId] = useState<bigint | null>(null);
 
   const placeOrder = usePlaceOrder();
-  const queryClient = useQueryClient();
 
   const maxStock = saree ? Number(saree.stock) : 1;
   const unitPrice = saree ? Number(saree.price) : 0;
@@ -60,22 +58,16 @@ export default function OrderPlacementModal({ saree, open, onClose }: OrderPlace
       const id = await placeOrder.mutateAsync({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        items: [{ sareeId: saree.id, quantity: BigInt(quantity) }],
-        productDetails: [
-          {
-            name: saree.name,
-            fabricType: saree.fabricType,
-            color: saree.color,
-            unitPrice: saree.price,
-            quantity: BigInt(quantity),
-          },
-        ],
+        sareeId: saree.id,
+        quantity: BigInt(quantity),
+        productName: saree.name,
+        fabricType: saree.fabricType,
+        color: saree.color,
+        unitPrice: saree.price,
       });
       setOrderId(id);
       setOrderSuccess(true);
-      // Invalidate orders cache so AdminOrders page reflects the new order immediately
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    } catch (err) {
+    } catch {
       // Error is handled via placeOrder.isError
     }
   };
