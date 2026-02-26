@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the admin panel saree upload flow with image compression, retry logic, better loading feedback, and improved backend error handling.
+**Goal:** Fix the saree catalog sync issue so that sarees added or updated in the admin panel immediately appear in the user-facing catalog without a page refresh.
 
 **Planned changes:**
-- Add client-side image compression in the AdminSarees upload form before submission, keeping images under 1.5MB, and display the compressed file size to the user
-- Show a progress bar or spinner during saree submission and disable the submit button while the upload is in progress
-- Add automatic retry logic (up to 3 attempts with exponential backoff) to saree add/update mutations, with descriptive error messages on failure distinguishing between image-too-large and network errors
-- Update `addSaree` and `updateSaree` in `backend/main.mo` to return a `Result` type with descriptive error variants instead of trapping on failure
+- Introduce a shared React Query key constant for the saree list query, referenced by both `AdminSarees.tsx` and `Catalog.tsx`.
+- Invalidate the saree list query cache upon successful add/update mutations in the admin panel so the catalog re-fetches automatically.
+- Audit `useQueries.ts` to remove any `staleTime`/`cacheTime` settings that would prevent re-fetching after invalidation.
+- Ensure newly added saree images (stored as blobs) are correctly converted to displayable URLs in the catalog page so no broken image icons appear.
 
-**User-visible outcome:** Admin users can upload saree images reliably with visual feedback during upload, automatic retries on failure, and clear error messages explaining what went wrong if the upload ultimately fails.
+**User-visible outcome:** After an admin adds or edits a saree, it immediately appears with its correct image in the user-facing catalog without requiring a manual page refresh.

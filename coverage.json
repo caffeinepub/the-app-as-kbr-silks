@@ -1,79 +1,61 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T04:38:52.741Z",
+  "generatedAt": "2026-02-26T05:44:51.271Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
+    "total": 3,
     "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
+        "summary": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/imageCompression.ts",
-          "frontend/src/pages/AdminSarees.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/AdminSarees.tsx",
+          "frontend/src/pages/Catalog.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/imageCompression.ts",
-          "frontend/src/pages/AdminSarees.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/Catalog.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+        "summary": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/AdminSarees.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/AdminSarees.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+        "summary": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/retryWithBackoff.ts",
-          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/Catalog.tsx",
           "frontend/src/pages/AdminSarees.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/retryWithBackoff.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/AdminSarees.tsx"
+          "frontend/src/pages/Catalog.tsx"
         ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Optimize the backend saree storage in backend/main.mo to store image data as a Blob or chunked format if necessary, and ensure the addSaree and updateSaree methods handle large payloads gracefully by returning a descriptive error variant instead of trapping.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
-    "build-template/README.md",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminSarees.tsx",
-    "frontend/src/utils/imageCompression.ts",
-    "frontend/src/utils/retryWithBackoff.ts",
+    "frontend/src/pages/Catalog.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

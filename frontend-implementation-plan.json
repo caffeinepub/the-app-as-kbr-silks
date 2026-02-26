@@ -1,69 +1,69 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix admin panel saree upload: image compression, retry logic, and better error handling",
+  "title": "Fix saree catalog sync: admin uploads not reflecting in user panel",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add client-side image compression before upload to keep images under the Internet Computer's message size limit",
+      "summary": "Invalidate React Query cache after admin saree operations to immediately reflect changes in user catalog",
       "acceptanceCriteria": [
-        "Images are compressed client-side before being included in the backend call",
-        "Compressed image size is visibly under 1.5MB before submission",
-        "The compression happens automatically without requiring user action"
+        "After submitting a new saree in the admin panel, the saree appears in the user-facing catalog without a page reload.",
+        "After editing an existing saree in the admin panel, the updated details (including image) are reflected in the catalog without a page reload.",
+        "The React Query query key used to fetch sarees in Catalog.tsx is invalidated upon successful add/update mutations in AdminSarees.tsx.",
+        "No stale saree data is shown in the catalog after an admin operation completes."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/imageCompression.ts",
-          "operation": "create",
-          "description": "Create a utility module that compresses images client-side using browser-native Canvas API. Export a compressImage function that accepts a File, target max size (1.5MB), and quality parameters, returning a compressed Blob with metadata including final file size. Use the blob-storage component's ExternalBlob.fromBytes() to prepare the compressed image for upload. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Review and ensure the saree mutation hooks (useAddSaree, useUpdateSaree, useDeleteSaree) are properly invalidating the React Query cache using queryClient.invalidateQueries with the shared 'sarees' query key upon successful mutation completion. Verify that the saree list query key is consistent and that the invalidation triggers re-fetch in both AdminSarees and Catalog pages."
         },
         {
           "path": "frontend/src/pages/AdminSarees.tsx",
           "operation": "modify",
-          "description": "Import and integrate the imageCompression utility into the saree add/edit modal form. When a user selects an image file, automatically compress it and display the compressed file size to the user before they submit. Store the compressed image data in the form state. Update the image upload handling to use ExternalBlob.fromBytes() with the compressed data. Verify the blob-storage component's usage instructions before implementing."
+          "description": "Verify that after successful saree add, update, or delete operations, the component properly awaits the mutation and ensures cache invalidation completes. Add user feedback (toast/notification) confirming the operation succeeded and the catalog has been refreshed. Ensure the form reset and modal close happen only after cache invalidation, so the user sees the updated catalog state immediately."
+        },
+        {
+          "path": "frontend/src/pages/Catalog.tsx",
+          "operation": "modify",
+          "description": "Audit the saree list query usage to confirm it uses the same query key as the admin mutations, and that no staleTime or cacheTime settings are preventing re-fetch after invalidation. Ensure the component properly shows loading state during re-fetch and displays fresh data once the invalidated query resolves."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add visible upload progress indicator and loading state to prevent multiple submissions",
+      "summary": "Audit saree list query to ensure consistent query key and proper re-fetch behavior after cache invalidation",
       "acceptanceCriteria": [
-        "A progress bar or spinner is shown during saree submission",
-        "The submit button is disabled while the upload is in progress",
-        "User receives clear visual feedback that the operation is being processed"
+        "The saree list query key in useQueries.ts is a single shared constant referenced by both the admin and catalog pages.",
+        "Invalidating the saree list query key triggers a re-fetch in the Catalog page.",
+        "The useSarees (or equivalent) query does not use staleTime or cacheTime settings that would prevent re-fetching after invalidation."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminSarees.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add upload progress tracking to the saree modal using the blob-storage component's ExternalBlob.withUploadProgress() method to monitor image upload percentage. Display a progress bar or percentage indicator in the modal during submission. Disable the submit button and show a loading spinner while the mutation is in progress (use the mutation's isPending state). Ensure the modal cannot be closed while uploading. Verify the blob-storage component's usage instructions before implementing."
+          "description": "Extract the 'sarees' query key into a shared constant (e.g., QUERY_KEYS.SAREES) at the top of the file. Ensure all saree-related queries and mutations reference this constant. Review the useSarees query configuration to remove or adjust any staleTime/cacheTime settings that could prevent immediate re-fetch after invalidation. Confirm that the queryFn properly calls actor.getAllSarees() and that the query is enabled when the actor is available."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add automatic retry logic with exponential backoff and descriptive error messages for failed saree submissions",
+      "summary": "Ensure saree images uploaded via admin are correctly fetched and rendered in catalog after cache invalidation",
       "acceptanceCriteria": [
-        "Failed saree submissions are automatically retried up to 3 times",
-        "Retries use exponential backoff (e.g., 1s, 2s, 4s delays)",
-        "After all retries fail, a descriptive error message is shown (not just 'try again')",
-        "Error message distinguishes between image-too-large and general network failure where possible"
+        "Newly added sarees display their uploaded image correctly in the catalog.",
+        "The image blob data returned from the backend is properly converted to a displayable URL (e.g., via a Blob URL or base64) in the Catalog page.",
+        "No broken image icons appear for freshly added sarees."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/retryWithBackoff.ts",
-          "operation": "create",
-          "description": "Create a generic retry utility that wraps async functions with exponential backoff retry logic. Accept parameters for max attempts (default 3) and base delay (default 1000ms). Return both the result and any accumulated errors. Export a helper function to parse backend error responses and generate user-friendly error messages that distinguish between image-too-large errors (StorageError containing size/limit info) and network/timeout errors."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/Catalog.tsx",
           "operation": "modify",
-          "description": "Wrap the addSaree and updateSaree mutations with the retry utility from retryWithBackoff.ts. Configure retry logic to attempt up to 3 times with exponential backoff (1s, 2s, 4s). Parse backend error responses to extract descriptive error messages from the StorageError variant. Map errors to user-friendly messages that explain whether the image is too large, network failed, or another issue occurred. Pass these error messages to the mutation's onError callback for display in the AdminSarees modal."
+          "description": "Review the image rendering logic for saree cards. Verify that when a saree.image (ExternalBlob) is present, the component calls getDirectURL() to obtain a displayable URL. Use the blob-storage component's ExternalBlob.getDirectURL() method to generate a browser-cached HTTP URL for each saree image. Ensure fallback to the placeholder image (frontend/public/assets/generated/saree-placeholder.dim_400x500.png) only when saree.image is null or undefined. Add error handling for image load failures to prevent broken image icons."
         },
         {
           "path": "frontend/src/pages/AdminSarees.tsx",
           "operation": "modify",
-          "description": "Display detailed error messages from the mutation's error state in the saree modal. Show the descriptive error message returned from the retry logic (e.g., 'Image size exceeds 1.5MB limit' or 'Network timeout after 3 attempts'). Style the error message prominently using alert or toast UI components. Clear the error message when the user modifies the form or closes the modal."
+          "description": "Verify that uploaded images are converted to ExternalBlob using ExternalBlob.fromBytes() before being passed to the addSaree or updateSaree mutations. Ensure the image compression utility (frontend/src/utils/imageCompression.ts) is applied before creating the ExternalBlob. Confirm that the image preview in the admin form also uses getDirectURL() for consistency with the catalog rendering. Verify the component's usage instructions from the blob-storage component before implementing any changes."
         }
       ]
     }

@@ -13,6 +13,8 @@ import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+
+
 actor {
   include MixinStorage();
 
@@ -47,7 +49,7 @@ actor {
     color : Text;
     price : Nat;
     stock : Nat;
-    image : Storage.ExternalBlob;
+    image : ?Storage.ExternalBlob;
   };
 
   module Saree {
@@ -165,7 +167,7 @@ actor {
     color : Text,
     price : Nat,
     stock : Nat,
-    image : Storage.ExternalBlob,
+    image : ?Storage.ExternalBlob,
   ) : async {
     #StorageError : Text;
   } {
@@ -199,7 +201,7 @@ actor {
     color : Text,
     price : Nat,
     stock : Nat,
-    image : Storage.ExternalBlob,
+    image : ?Storage.ExternalBlob,
   ) : async {
     #StorageError : Text;
   } {

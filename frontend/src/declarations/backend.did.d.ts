@@ -52,7 +52,7 @@ export interface Saree {
   'color' : string,
   'description' : string,
   'stock' : bigint,
-  'image' : ExternalBlob,
+  'image' : [] | [ExternalBlob],
   'price' : bigint,
 }
 export type Time = bigint;
@@ -93,7 +93,7 @@ export interface _SERVICE {
     undefined
   >,
   'addSaree' : ActorMethod<
-    [string, string, FabricType, string, bigint, bigint, ExternalBlob],
+    [string, string, FabricType, string, bigint, bigint, [] | [ExternalBlob]],
     { 'StorageError' : string }
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -121,7 +121,16 @@ export interface _SERVICE {
   'updateOrderStatus' : ActorMethod<[bigint, OrderStatus], undefined>,
   'updatePaymentStatus' : ActorMethod<[bigint, string], undefined>,
   'updateSaree' : ActorMethod<
-    [bigint, string, string, FabricType, string, bigint, bigint, ExternalBlob],
+    [
+      bigint,
+      string,
+      string,
+      FabricType,
+      string,
+      bigint,
+      bigint,
+      [] | [ExternalBlob],
+    ],
     { 'StorageError' : string }
   >,
 }

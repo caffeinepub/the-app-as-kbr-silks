@@ -1,93 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Fix admin panel saree upload: image compression, retry logic, and better error handling",
+  "title": "Fix saree catalog sync: admin uploads not reflecting in user panel",
   "projectName": "KBR Silks",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
+      "text": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Add image compression before upload"
+          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
         ]
       },
       "acceptanceCriteria": [
-        "Images are compressed client-side before being included in the backend call",
-        "Compressed image size is visibly under 1.5MB before submission",
-        "The compression happens automatically without requiring user action"
+        "After submitting a new saree in the admin panel, the saree appears in the user-facing catalog without a page reload.",
+        "After editing an existing saree in the admin panel, the updated details (including image) are reflected in the catalog without a page reload.",
+        "The React Query query key used to fetch sarees in Catalog.tsx is invalidated upon successful add/update mutations in AdminSarees.tsx.",
+        "No stale saree data is shown in the catalog after an admin operation completes."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "text": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Add a loading indicator and retry logic"
+          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
         ]
       },
       "acceptanceCriteria": [
-        "A progress bar or spinner is shown during saree submission",
-        "The submit button is disabled while the upload is in progress",
-        "User receives clear visual feedback that the operation is being processed"
+        "The saree list query key in useQueries.ts is a single shared constant referenced by both the admin and catalog pages.",
+        "Invalidating the saree list query key triggers a re-fetch in the Catalog page.",
+        "The useSarees (or equivalent) query does not use staleTime or cacheTime settings that would prevent re-fetching after invalidation."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+      "text": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Add better error messages so you know exactly what's failing",
-          "add retry logic"
+          "After adding the sarees in admin page it is showing uploaded but not updated in the user panel"
         ]
       },
       "acceptanceCriteria": [
-        "Failed saree submissions are automatically retried up to 3 times",
-        "Retries use exponential backoff (e.g., 1s, 2s, 4s delays)",
-        "After all retries fail, a descriptive error message is shown (not just 'try again')",
-        "Error message distinguishes between image-too-large and general network failure where possible"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Optimize the backend saree storage in backend/main.mo to store image data as a Blob or chunked format if necessary, and ensure the addSaree and updateSaree methods handle large payloads gracefully by returning a descriptive error variant instead of trapping.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Optimize how saree data is stored in the backend"
-        ]
-      },
-      "acceptanceCriteria": [
-        "addSaree and updateSaree return a Result type with a descriptive error on failure instead of trapping",
-        "Backend does not trap or time out on valid saree submissions under 1.5MB",
-        "Error messages from the backend are surfaced to the frontend"
+        "Newly added sarees display their uploaded image correctly in the catalog.",
+        "The image blob data returned from the backend is properly converted to a displayable URL (e.g., via a Blob URL or base64) in the Catalog page.",
+        "No broken image icons appear for freshly added sarees."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files listed in frontend.immutablePaths",
-    "All Motoko logic must remain in backend/main.mo",
-    "Do not change the existing Saree data type fields visible to the catalog or order system"
+    "Do not change the backend data model or CRUD API.",
+    "Do not modify any files listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Adding new saree fields or changing the catalog display",
-    "Changing authentication or owner verification logic",
-    "Implementing multi-part chunked upload infrastructure"
+    "Real-time / WebSocket-based live updates between admin and user sessions.",
+    "Changes to the admin UI layout or saree form fields.",
+    "Any backend schema migration."
   ],
   "imageRequirements": {
     "required": [],

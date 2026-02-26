@@ -74,7 +74,7 @@ export const Saree = IDL.Record({
   'color' : IDL.Text,
   'description' : IDL.Text,
   'stock' : IDL.Nat,
-  'image' : ExternalBlob,
+  'image' : IDL.Opt(ExternalBlob),
   'price' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
@@ -120,7 +120,7 @@ export const idlService = IDL.Service({
         IDL.Text,
         IDL.Nat,
         IDL.Nat,
-        ExternalBlob,
+        IDL.Opt(ExternalBlob),
       ],
       [IDL.Variant({ 'StorageError' : IDL.Text })],
       [],
@@ -164,7 +164,7 @@ export const idlService = IDL.Service({
         IDL.Text,
         IDL.Nat,
         IDL.Nat,
-        ExternalBlob,
+        IDL.Opt(ExternalBlob),
       ],
       [IDL.Variant({ 'StorageError' : IDL.Text })],
       [],
@@ -237,7 +237,7 @@ export const idlFactory = ({ IDL }) => {
     'color' : IDL.Text,
     'description' : IDL.Text,
     'stock' : IDL.Nat,
-    'image' : ExternalBlob,
+    'image' : IDL.Opt(ExternalBlob),
     'price' : IDL.Nat,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
@@ -283,7 +283,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Nat,
           IDL.Nat,
-          ExternalBlob,
+          IDL.Opt(ExternalBlob),
         ],
         [IDL.Variant({ 'StorageError' : IDL.Text })],
         [],
@@ -327,7 +327,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Nat,
           IDL.Nat,
-          ExternalBlob,
+          IDL.Opt(ExternalBlob),
         ],
         [IDL.Variant({ 'StorageError' : IDL.Text })],
         [],

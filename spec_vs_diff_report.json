@@ -1,27 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T04:38:52.739Z",
-  "summary": "The diff implements most requirements well. REQ-1 (image compression with size display), REQ-2 (progress indicator and disabled submit button), and REQ-3 (retry logic with exponential backoff and descriptive errors) are all clearly implemented in the frontend. REQ-4 is partially implemented — a SareeError type is defined in backend/main.mo, but the diff is truncated and there is no visible evidence that addSaree/updateSaree actually return Result types with descriptive errors instead of trapping. The backend diff shows Runtime.trap() still being used in other methods, and the actual addSaree/updateSaree function bodies are cut off.",
-  "missing_requirements": [
+  "generatedAt": "2026-02-26T05:44:51.268Z",
+  "summary": "The diff implements all three requirements. REQ-1 is addressed by adding invalidateQueries + refetchQueries in useAddSaree and useUpdateSaree onSuccess handlers. REQ-2 is addressed by introducing a shared QUERY_KEYS constant with staleTime:0/gcTime:0/refetchOnMount:'always' in useGetAllSarees, used consistently across pages. REQ-3 is addressed by the SareeImage component in Catalog.tsx using ExternalBlob.getDirectURL() for proper image rendering. All acceptance criteria appear to be met.",
+  "missing_requirements": [],
+  "hallucinated_features": [
     {
-      "id": "REQ-4",
-      "requirement": "addSaree and updateSaree must return a Result type with descriptive error variants instead of trapping, and backend must not trap on valid submissions under 1.5MB",
-      "reason": "The backend/main.mo diff defines a SareeError type with descriptive variants, but the actual addSaree and updateSaree function implementations are truncated. The visible code still uses Runtime.trap() in other methods, and there is no confirmed evidence that addSaree/updateSaree use Result return types instead of trapping. The requirement to surface backend error messages to the frontend also cannot be confirmed from the truncated diff.",
+      "description": "A manual refresh button added to the filter bar in the Catalog page",
+      "reason": "The build request does not mention a manual refresh button in the catalog UI. This is an extra UI element not requested.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/pages/Catalog.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "A background 'Updating...' indicator shown during background refetches in the Catalog page",
+      "reason": "The build request does not request any loading or updating indicator UI in the catalog.",
+      "evidence": [
+        "frontend/src/pages/Catalog.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "useEffect on mount calls refetch() in Catalog.tsx to always load fresh data on every mount",
+      "reason": "An explicit refetch on every catalog mount is not specified in the requirements; requirements only ask for cache invalidation to trigger re-fetch after admin mutations.",
+      "evidence": [
+        "frontend/src/pages/Catalog.tsx",
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.72,
+  "confidence": 0.82,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminSarees.tsx",
-    "frontend/src/utils/imageCompression.ts",
-    "frontend/src/utils/retryWithBackoff.ts",
+    "frontend/src/pages/Catalog.tsx",
     "project_state.json"
   ]
 }

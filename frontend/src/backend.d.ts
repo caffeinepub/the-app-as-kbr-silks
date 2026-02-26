@@ -51,7 +51,7 @@ export interface Saree {
     color: string;
     description: string;
     stock: bigint;
-    image: ExternalBlob;
+    image?: ExternalBlob;
     price: bigint;
 }
 export interface UserProfile {
@@ -76,7 +76,7 @@ export enum UserRole {
 }
 export interface backendInterface {
     addCustomer(name: string, phone: string, email: string | null, address: string): Promise<void>;
-    addSaree(name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob): Promise<{
+    addSaree(name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob | null): Promise<{
         __kind__: "StorageError";
         StorageError: string;
     }>;
@@ -98,7 +98,7 @@ export interface backendInterface {
     updateCustomer(phone: string, name: string, email: string | null, address: string): Promise<void>;
     updateOrderStatus(id: bigint, status: OrderStatus): Promise<void>;
     updatePaymentStatus(id: bigint, paymentStatus: string): Promise<void>;
-    updateSaree(id: bigint, name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob): Promise<{
+    updateSaree(id: bigint, name: string, description: string, fabricType: FabricType, color: string, price: bigint, stock: bigint, image: ExternalBlob | null): Promise<{
         __kind__: "StorageError";
         StorageError: string;
     }>;

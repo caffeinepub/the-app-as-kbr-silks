@@ -1,59 +1,43 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce saree shop with admin panel. User is experiencing issues adding sarees in the admin panel (timeout/error). Fix involves image compression, better error handling, optimized storage, and retry logic.",
+  "summary": "App with admin panel for managing sarees and a user panel for displaying them. Currently investigating a bug where sarees added in the admin panel are not reflected in the user panel.",
   "architectural_notes": [
-    "Backend runs on Internet Computer (ICP) canisters with ~2MB per-call message size limit",
-    "Saree image uploads must be compressed to under 1-2MB to avoid timeout errors"
+    "App has an admin panel for uploading/managing sarees and a user panel for displaying them"
   ],
   "known_issues": [
-    "Admin panel saree upload times out and shows 'can't add, try again' error — likely due to large image files or canister memory limits"
+    "Sarees added in the admin panel show as uploaded but do not appear/update in the user panel"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-client-side-image-compression-in-the-adminsarees-upload-form-before-sending-image-data-to-the-backend-compress-images-to-ensure-they-stay-within-the-internet-computer-s-2mb-message-size-limit-show-the-user-the-compressed-file-size-before-submission",
-      "title": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
+      "id": "feature-after-a-saree-is-successfully-added-or-updated-in-the-admin-panel-adminsarees-tsx-the-react-query-cache-for-the-saree-catalog-must-be-invalidated-so-the-user-facing-catalog-page-catalog-tsx-immediately-reflects-the-new-or-updated-saree-without-requiring-a-manual-page-refresh",
+      "title": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-visible-upload-progress-indicator-and-loading-state-in-the-adminsarees-add-edit-modal-so-users-know-the-upload-is-in-progress-and-do-not-click-submit-multiple-times",
-      "title": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "id": "feature-audit-the-saree-list-query-in-usequeries-ts-to-ensure-it-fetches-fresh-data-from-the-backend-when-the-cache-is-invalidated-and-that-the-query-key-is-consistent-between-adminsarees-tsx-and-catalog-tsx-so-cache-invalidation-works-correctly-across-both-pages",
+      "title": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-automatic-retry-logic-up-to-3-attempts-with-exponential-backoff-to-the-saree-add-update-mutation-in-the-adminsarees-page-if-all-retries-fail-display-a-specific-error-message-describing-the-likely-cause-e-g-image-too-large-network-timeout-rather-than-a-generic-try-again-message",
-      "title": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+      "id": "feature-ensure-that-saree-images-uploaded-via-the-admin-panel-stored-as-blobs-in-the-backend-are-correctly-fetched-and-rendered-in-the-user-facing-catalog-page-after-a-cache-invalidation-so-newly-added-sarees-display-their-images-and-not-a-broken-empty-image-placeholder",
+      "title": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Fix admin panel saree upload: add image compression, retry logic, better error messages, and optimized backend storage",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Optimize the backend saree storage in backend/main.mo to store image data as a Blob or chunked format if necessary, and ensure the addSaree and updateSaree methods handle large payloads gracefully by returning a descriptive error variant instead of trapping.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    }
-  ],
+  "new_feature_requests": [],
   "gameProjectType": "none",
-  "projectName": "Saree Shop",
+  "projectName": "KBR Silks",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

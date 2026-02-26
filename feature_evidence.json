@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-client-side-image-compression-in-the-adminsarees-upload-form-before-sending-image-data-to-the-backend-compress-images-to-ensure-they-stay-within-the-internet-computer-s-2mb-message-size-limit-show-the-user-the-compressed-file-size-before-submission",
-      "featureTitle": "Add client-side image compression in the AdminSarees upload form before sending image data to the backend. Compress images to ensure they stay within the Internet Computer's ~2MB message size limit. Show the user the compressed file size before submission.",
+      "featureId": "feature-after-a-saree-is-successfully-added-or-updated-in-the-admin-panel-adminsarees-tsx-the-react-query-cache-for-the-saree-catalog-must-be-invalidated-so-the-user-facing-catalog-page-catalog-tsx-immediately-reflects-the-new-or-updated-saree-without-requiring-a-manual-page-refresh",
+      "featureTitle": "After a saree is successfully added or updated in the admin panel (AdminSarees.tsx), the React Query cache for the saree catalog must be invalidated so the user-facing Catalog page (Catalog.tsx) immediately reflects the new or updated saree without requiring a manual page refresh.",
       "files": [
-        "frontend/src/pages/AdminSarees.tsx",
-        "frontend/src/utils/imageCompression.ts"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Catalog.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -23,10 +23,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-visible-upload-progress-indicator-and-loading-state-in-the-adminsarees-add-edit-modal-so-users-know-the-upload-is-in-progress-and-do-not-click-submit-multiple-times",
-      "featureTitle": "Add a visible upload progress indicator and loading state in the AdminSarees add/edit modal so users know the upload is in progress and do not click submit multiple times.",
+      "featureId": "feature-audit-the-saree-list-query-in-usequeries-ts-to-ensure-it-fetches-fresh-data-from-the-backend-when-the-cache-is-invalidated-and-that-the-query-key-is-consistent-between-adminsarees-tsx-and-catalog-tsx-so-cache-invalidation-works-correctly-across-both-pages",
+      "featureTitle": "Audit the saree list query in useQueries.ts to ensure it fetches fresh data from the backend when the cache is invalidated, and that the query key is consistent between AdminSarees.tsx and Catalog.tsx so cache invalidation works correctly across both pages.",
       "files": [
-        "frontend/src/pages/AdminSarees.tsx"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -43,12 +43,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-automatic-retry-logic-up-to-3-attempts-with-exponential-backoff-to-the-saree-add-update-mutation-in-the-adminsarees-page-if-all-retries-fail-display-a-specific-error-message-describing-the-likely-cause-e-g-image-too-large-network-timeout-rather-than-a-generic-try-again-message",
-      "featureTitle": "Add automatic retry logic (up to 3 attempts with exponential backoff) to the saree add/update mutation in the AdminSarees page. If all retries fail, display a specific error message describing the likely cause (e.g., image too large, network timeout) rather than a generic 'try again' message.",
+      "featureId": "feature-ensure-that-saree-images-uploaded-via-the-admin-panel-stored-as-blobs-in-the-backend-are-correctly-fetched-and-rendered-in-the-user-facing-catalog-page-after-a-cache-invalidation-so-newly-added-sarees-display-their-images-and-not-a-broken-empty-image-placeholder",
+      "featureTitle": "Ensure that saree images uploaded via the admin panel (stored as blobs in the backend) are correctly fetched and rendered in the user-facing Catalog page after a cache invalidation, so newly added sarees display their images and not a broken/empty image placeholder.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/AdminSarees.tsx",
-        "frontend/src/utils/retryWithBackoff.ts"
+        "frontend/src/pages/Catalog.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
